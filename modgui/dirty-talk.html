@@ -43,6 +43,14 @@
 
     </div>
 
+    <!-- Bypass footswitch. MOD-UI toggles the `on` class on the bypass-light
+         element: present = enabled (lit), absent = bypassed (dim). -->
+    <div class="dt-footswitch" mod-role="bypass" title="Enable / Bypass">
+        <div class="dt-foot-led" mod-role="bypass-light"></div>
+        <div class="dt-foot-btn"></div>
+        <div class="dt-foot-label">ON / BYPASS</div>
+    </div>
+
 </div>
 
 <!-- Audio I/O jacks — siblings of the panel; MOD-UI core positions and styles
