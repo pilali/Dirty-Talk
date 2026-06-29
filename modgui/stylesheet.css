@@ -1,39 +1,40 @@
 /* Dirty Talk - modgui stylesheet (sober dark, flat) */
+/* All dimensions scaled +25% from the original 240x300 layout. */
 
 .mod-pedal.dirty-talk {
-    width: 240px;
-    height: 300px;
+    width: 300px;
+    height: 375px;
     background: #181a1e;
-    border-radius: 8px;
+    border-radius: 10px;
     box-sizing: border-box;
-    padding: 14px 12px;
+    padding: 17.5px 15px;
     font-family: 'Helvetica Neue', Arial, sans-serif;
     color: #e0e2e6;
     position: relative;
 }
 
-.dirty-talk .mod-plugin-title { text-align: left; margin-bottom: 10px; }
+.dirty-talk .mod-plugin-title { text-align: left; margin-bottom: 12.5px; }
 .dirty-talk .mod-plugin-title h1 {
-    font-size: 19px; font-weight: 700; letter-spacing: 1px;
+    font-size: 23.75px; font-weight: 700; letter-spacing: 1.25px;
     margin: 0; color: #e0e2e6;
 }
 .dirty-talk .mod-plugin-title h2 {
-    font-size: 8px; font-weight: 400; letter-spacing: 1.5px;
-    margin: 2px 0 0 0; color: #848a94;
+    font-size: 10px; font-weight: 400; letter-spacing: 1.875px;
+    margin: 2.5px 0 0 0; color: #848a94;
 }
 
 /* mode selector */
-.dirty-talk .mode-row { margin: 6px 0 14px 0; }
+.dirty-talk .mode-row { margin: 7.5px 0 17.5px 0; }
 .dirty-talk .mode-enum {
     background: #eb6e46;
     color: #181a1e;
-    border-radius: 5px;
-    height: 26px;
-    line-height: 26px;
+    border-radius: 6.25px;
+    height: 32.5px;
+    line-height: 32.5px;
     text-align: center;
-    font-size: 12px;
+    font-size: 15px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 1.25px;
     cursor: pointer;
     user-select: none;
     /* sit above MOD-UI core's drag-handle (z-index 20, swallows clicks) AND
@@ -51,18 +52,18 @@
     top: 100%;
     left: 0;
     right: 0;
-    margin-top: 3px;
+    margin-top: 3.75px;
     background: #22252b;
     border: 1px solid #34383f;
-    border-radius: 5px;
+    border-radius: 6.25px;
     overflow: hidden;
     z-index: 40;
 }
 .dirty-talk .mod-enumerated-list [mod-role=enumeration-option] {
-    padding: 6px 8px;
-    font-size: 11px;
+    padding: 7.5px 10px;
+    font-size: 13.75px;
     font-weight: 600;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.625px;
     color: #e0e2e6;
     text-align: center;
     cursor: pointer;
@@ -79,19 +80,19 @@
 .dirty-talk .knob-row {
     display: flex;
     justify-content: space-between;
-    margin-top: 8px;
+    margin-top: 10px;
 }
 .dirty-talk .knob-cell {
     flex: 1;
     text-align: center;
 }
 .dirty-talk .dt-knob {
-    width: 44px;
-    height: 44px;
+    width: 55px;
+    height: 55px;
     margin: 0 auto;
     border-radius: 50%;
     background: #22252b;
-    border: 3px solid #34383f;
+    border: 3.75px solid #34383f;
     box-sizing: border-box;
     position: relative;
     z-index: 30; /* keep clickable above the drag-handle */
@@ -102,63 +103,63 @@
     content: '';
     position: absolute;
     left: 50%;
-    top: 4px;
-    width: 2px;
-    height: 14px;
-    margin-left: -1px;
+    top: 5px;
+    width: 2.5px;
+    height: 17.5px;
+    margin-left: -1.25px;
     background: #eb6e46;
-    border-radius: 1px;
+    border-radius: 1.25px;
 }
 .dirty-talk .knob-value {
-    font-size: 9px;
+    font-size: 11.25px;
     color: #e0e2e6;
-    margin-top: 6px;
-    min-height: 11px;
+    margin-top: 7.5px;
+    min-height: 13.75px;
 }
 .dirty-talk .knob-label {
-    font-size: 8px;
-    letter-spacing: 0.5px;
+    font-size: 10px;
+    letter-spacing: 0.625px;
     color: #848a94;
-    margin-top: 2px;
+    margin-top: 2.5px;
 }
 
 /* bypass footswitch */
 .dirty-talk .dt-footswitch {
     position: relative;
     z-index: 30; /* clickable above the drag-handle */
-    margin-top: 16px;
+    margin-top: 20px;
     text-align: center;
     cursor: pointer;
     user-select: none;
 }
 .dirty-talk .dt-foot-led {
-    width: 7px;
-    height: 7px;
+    width: 8.75px;
+    height: 8.75px;
     border-radius: 50%;
-    margin: 0 auto 6px;
+    margin: 0 auto 7.5px;
     background: #3a3f47;
     transition: background 120ms ease, box-shadow 120ms ease;
 }
 /* MOD-UI adds `on` when the plugin is enabled; absent = bypassed */
 .dirty-talk .dt-foot-led.on {
     background: #eb6e46;
-    box-shadow: 0 0 8px rgba(235,110,70,0.85);
+    box-shadow: 0 0 10px rgba(235,110,70,0.85);
 }
 .dirty-talk .dt-foot-btn {
-    width: 36px;
-    height: 36px;
+    width: 45px;
+    height: 45px;
     border-radius: 50%;
     margin: 0 auto;
     background: radial-gradient(circle at 50% 32%, #3c4149, #1c1f24);
-    border: 2px solid #4a4f57;
-    box-shadow: inset 0 1px 2px rgba(255,255,255,0.06), 0 2px 3px rgba(0,0,0,0.5);
+    border: 2.5px solid #4a4f57;
+    box-shadow: inset 0 1.25px 2.5px rgba(255,255,255,0.06), 0 2.5px 3.75px rgba(0,0,0,0.5);
 }
 .dirty-talk .dt-footswitch:active .dt-foot-btn {
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+    box-shadow: inset 0 2.5px 5px rgba(0,0,0,0.6);
 }
 .dirty-talk .dt-foot-label {
-    font-size: 7px;
-    letter-spacing: 1px;
+    font-size: 8.75px;
+    letter-spacing: 1.25px;
     color: #848a94;
-    margin-top: 5px;
+    margin-top: 6.25px;
 }
