@@ -1,4 +1,6 @@
-<div class="dirty-talk mod-pedal-pedal">
+<div class="mod-pedal dirty-talk">
+
+    <div mod-role="drag-handle" class="mod-drag-handle"></div>
 
     <div class="mod-plugin-title">
         <h1>DIRTY TALK</h1>
@@ -41,4 +43,42 @@
 
     </div>
 
+</div>
+
+<!-- Audio I/O jacks — siblings of the panel; MOD-UI core positions and styles
+     them just outside the pedal box. The loops emit one jack per port the host
+     reports (Dirty Talk is mono in/out; midi/cv loops stay empty). -->
+<div class="mod-pedal-input">
+    {{#effect.ports.audio.input}}
+    <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-audio-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-pedal-input-image"></div>
+    </div>
+    {{/effect.ports.audio.input}}
+    {{#effect.ports.midi.input}}
+    <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-midi-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-pedal-input-image"></div>
+    </div>
+    {{/effect.ports.midi.input}}
+    {{#effect.ports.cv.input}}
+    <div class="mod-input mod-input-disconnected" title="{{name}}" mod-role="input-cv-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-pedal-input-image"></div>
+    </div>
+    {{/effect.ports.cv.input}}
+</div>
+<div class="mod-pedal-output">
+    {{#effect.ports.audio.output}}
+    <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-audio-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-pedal-output-image"></div>
+    </div>
+    {{/effect.ports.audio.output}}
+    {{#effect.ports.midi.output}}
+    <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-midi-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-pedal-output-image"></div>
+    </div>
+    {{/effect.ports.midi.output}}
+    {{#effect.ports.cv.output}}
+    <div class="mod-output mod-output-disconnected" title="{{name}}" mod-role="output-cv-port" mod-port-symbol="{{symbol}}">
+        <div class="mod-pedal-output-image"></div>
+    </div>
+    {{/effect.ports.cv.output}}
 </div>

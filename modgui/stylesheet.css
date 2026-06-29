@@ -1,7 +1,6 @@
 /* Dirty Talk - modgui stylesheet (sober dark, flat) */
 
-.mod-pedal.dirty-talk,
-.dirty-talk.mod-pedal-pedal {
+.mod-pedal.dirty-talk {
     width: 240px;
     height: 280px;
     background: #181a1e;
