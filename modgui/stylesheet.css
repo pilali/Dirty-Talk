@@ -1,0 +1,87 @@
+/* Dirty Talk - modgui stylesheet (sober dark, flat) */
+
+.mod-pedal.dirty-talk,
+.dirty-talk.mod-pedal-pedal {
+    width: 240px;
+    height: 280px;
+    background: #181a1e;
+    border-radius: 8px;
+    box-sizing: border-box;
+    padding: 14px 12px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #e0e2e6;
+    position: relative;
+}
+
+.dirty-talk .mod-plugin-title { text-align: left; margin-bottom: 10px; }
+.dirty-talk .mod-plugin-title h1 {
+    font-size: 19px; font-weight: 700; letter-spacing: 1px;
+    margin: 0; color: #e0e2e6;
+}
+.dirty-talk .mod-plugin-title h2 {
+    font-size: 8px; font-weight: 400; letter-spacing: 1.5px;
+    margin: 2px 0 0 0; color: #848a94;
+}
+
+/* mode selector */
+.dirty-talk .mode-row { margin: 6px 0 14px 0; }
+.dirty-talk .mode-enum {
+    background: #eb6e46;
+    color: #181a1e;
+    border-radius: 5px;
+    height: 26px;
+    line-height: 26px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    user-select: none;
+}
+.dirty-talk .mode-readout { width: 100%; height: 100%; }
+
+/* knobs */
+.dirty-talk .knob-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+}
+.dirty-talk .knob-cell {
+    flex: 1;
+    text-align: center;
+}
+.dirty-talk .dt-knob {
+    width: 44px;
+    height: 44px;
+    margin: 0 auto;
+    border-radius: 50%;
+    background: #22252b;
+    border: 3px solid #34383f;
+    box-sizing: border-box;
+    position: relative;
+    cursor: ns-resize;
+}
+/* pointer indicator (rotated by MOD runtime via transform on the port element) */
+.dirty-talk .dt-knob:after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 4px;
+    width: 2px;
+    height: 14px;
+    margin-left: -1px;
+    background: #eb6e46;
+    border-radius: 1px;
+}
+.dirty-talk .knob-value {
+    font-size: 9px;
+    color: #e0e2e6;
+    margin-top: 6px;
+    min-height: 11px;
+}
+.dirty-talk .knob-label {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    color: #848a94;
+    margin-top: 2px;
+}

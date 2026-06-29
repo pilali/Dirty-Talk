@@ -1,0 +1,22 @@
+# MOD GUI description for Dirty Talk.
+# These triples are merged into the plugin .ttl when packaging for MOD
+# (see mod-builder/dirty-talk.mk). Paths are relative to the .lv2 bundle root.
+
+@prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
+@prefix modgui: <http://moddevices.com/ns/modgui#> .
+
+<https://mod.audio/plugins/dirty-talk>
+    modgui:gui [
+        a modgui:Gui ;
+        modgui:resourcesDirectory <modgui> ;
+        modgui:iconTemplate <modgui/dirty-talk.html> ;
+        modgui:stylesheet <modgui/stylesheet.css> ;
+        modgui:screenshot <modgui/screenshot.png> ;
+        modgui:thumbnail <modgui/thumbnail.png> ;
+        modgui:brand "Pilal" ;
+        modgui:label "Dirty Talk" ;
+        modgui:model "boxy" ;
+        modgui:panel "1" ;
+        modgui:color "black" ;
+        modgui:knob "black" ;
+    ] .

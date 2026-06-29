@@ -1,0 +1,70 @@
+name: build
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential pkg-config \
+            libgl1-mesa-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev \
+            libjack-jackd2-dev liblo-dev
+      - name: Build
+        run: make -j$(nproc)
+      - name: Generate LV2 ttl
+        run: make gen
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dirty-talk-linux
+          path: bin/
+
+  macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Build (universal2)
+        run: make -j$(sysctl -n hw.ncpu) MACOS_UNIVERSAL=true
+      - name: Generate LV2 ttl
+        run: make gen MACOS_UNIVERSAL=true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dirty-talk-macos
+          path: bin/
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-pkg-config
+            make
+      - name: Build
+        run: make -j$(nproc)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dirty-talk-windows
+          path: bin/
