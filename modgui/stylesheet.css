@@ -36,10 +36,11 @@
     letter-spacing: 1px;
     cursor: pointer;
     user-select: none;
-    /* sit above MOD-UI core's drag-handle (z-index 20), which otherwise
-       blankets the panel and swallows clicks on the controls. */
+    /* sit above MOD-UI core's drag-handle (z-index 20, swallows clicks) AND
+       above the knobs (z-index 30) so the open dropdown — bounded by this
+       element's stacking context — paints over them instead of behind. */
     position: relative;
-    z-index: 30;
+    z-index: 50;
 }
 .dirty-talk .mode-readout { width: 100%; height: 100%; }
 
