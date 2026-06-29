@@ -51,10 +51,17 @@ Requires a C++ compiler, `make`, `pkg-config` and OpenGL/X11 dev headers
 git clone --recursive https://github.com/pilali/Dirty-Talk.git
 cd Dirty-Talk
 make            # builds LV2, VST2, VST3, CLAP, JACK (+ AU on macOS)
-make gen        # generates the LV2 .ttl files
+make gen        # generates the LV2 .ttl files (desktop dsp+ui bundle)
+make mod        # assembles the consolidated MOD bundle: bin/dirty-talk.lv2/
 ```
 
 Artifacts land in `bin/`. macOS universal binaries: `make MACOS_UNIVERSAL=true`.
+
+`make mod` produces the headless device bundle locally — a single DSP-only
+`dirty_talk.so`, generated `dirty_talk.ttl`, `modgui.ttl` and a `modgui/`
+resource folder — identical in layout to what `mod-builder/dirty-talk.mk`
+installs on a MOD device. It is what you copy into `~/.lv2` to test under
+mod-host/mod-ui locally.
 
 > If you cloned without `--recursive`: `git submodule update --init --recursive`.
 
