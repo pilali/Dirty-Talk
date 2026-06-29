@@ -19,4 +19,18 @@
         modgui:panel "1" ;
         modgui:color "black" ;
         modgui:knob "black" ;
+
+        # Ports surfaced to the host (parameter list / hardware addressing).
+        # The icon template binds each widget by lv2:symbol (mod-port-symbol).
+        modgui:port [
+            lv2:index 2 ; lv2:symbol "mode"        ; lv2:name "Mode" ;
+        ] , [
+            lv2:index 3 ; lv2:symbol "center_freq" ; lv2:name "Center Freq" ;
+        ] , [
+            lv2:index 4 ; lv2:symbol "bandwidth"   ; lv2:name "Bandwidth" ;
+        ] , [
+            lv2:index 5 ; lv2:symbol "gate"        ; lv2:name "Gate" ;
+        ] , [
+            lv2:index 6 ; lv2:symbol "dry_wet"     ; lv2:name "Dry/Wet" ;
+        ] ;
     ] .

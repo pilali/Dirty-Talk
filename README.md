@@ -75,4 +75,11 @@ dpf/                 DISTRHO Plugin Framework (git submodule)
 
 `mod-builder/dirty-talk.mk` is a [mod-plugin-builder](https://github.com/moddevices/mod-plugin-builder)
 package. Place it under `package/dirty-talk/`, add a matching `Config.in`, then add
-`dirty-talk` to your build set. It builds the LV2 target and ships the modgui.
+`dirty-talk` to your build set.
+
+The MOD bundle is built for a headless mod-host/mod-ui device, not the desktop:
+it ships a **single DSP-only binary** (`dirty_talk.so`, built with
+`DISTRHO_PLUGIN_HAS_UI=0` so there is no native `ui:X11UI`) and the web modgui.
+`manifest.ttl` declares the plugin and `rdfs:seeAlso`s both `dirty_talk.ttl`
+(ports) and `modgui.ttl` (web UI); `modgui.ttl` sits at the bundle root with its
+resources under `modgui/`. The desktop formats above keep the embedded NanoVG GUI.

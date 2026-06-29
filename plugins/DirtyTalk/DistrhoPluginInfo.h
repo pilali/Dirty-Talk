@@ -15,7 +15,12 @@
 #define DISTRHO_PLUGIN_BRAND_ID  Plal
 #define DISTRHO_PLUGIN_UNIQUE_ID DtTk
 
+// HAS_UI defaults to 1 (desktop formats ship the NanoVG GUI). The MOD/LV2
+// device build overrides it to 0 (-DDISTRHO_PLUGIN_HAS_UI=0) so the DSP-only
+// bundle carries no native ui:X11UI — the web modgui drives the UI there.
+#ifndef DISTRHO_PLUGIN_HAS_UI
 #define DISTRHO_PLUGIN_HAS_UI      1
+#endif
 #define DISTRHO_PLUGIN_IS_RT_SAFE  1
 #define DISTRHO_PLUGIN_NUM_INPUTS  1
 #define DISTRHO_PLUGIN_NUM_OUTPUTS 1

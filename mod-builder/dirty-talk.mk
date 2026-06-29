@@ -17,27 +17,41 @@ DIRTY_TALK_SITE_METHOD = git
 DIRTY_TALK_GIT_SUBMODULES = YES
 DIRTY_TALK_BUNDLES = dirty-talk.lv2
 
-# Build the separate LV2 DSP+UI binaries, then generate the .ttl files with
-# DPF's lv2_ttl_generator. The generator is built with the target toolchain and
-# run through mod-plugin-builder's qemu EXE_WRAPPER (honoured by generate-ttl.sh).
+# Build a single DSP-only LV2 binary (no native ui:X11UI — the web modgui drives
+# the UI on MOD), then generate the .ttl files with DPF's lv2_ttl_generator. The
+# generator is built with the target toolchain and run through mod-plugin-builder's
+# qemu EXE_WRAPPER (honoured by generate-ttl.sh). DIRTY_TALK_DSP_ONLY=true sets
+# -DDISTRHO_PLUGIN_HAS_UI=0 inside the plugin Makefile so the cross-toolchain
+# CXXFLAGS stay intact.
 define DIRTY_TALK_BUILD_CMDS
 	$(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) \
 		-C $(@D)/dpf/utils/lv2-ttl-generator
 	$(TARGET_MAKE_ENV) $(TARGET_CONFIGURE_OPTS) $(MAKE) NOOPT=true \
-		-C $(@D)/plugins/DirtyTalk lv2_sep
+		DIRTY_TALK_DSP_ONLY=true -C $(@D)/plugins/DirtyTalk lv2_dsp
 	cd $(@D) && $(TARGET_MAKE_ENV) ./dpf/utils/generate-ttl.sh
 endef
 
-# Install the generated bundle, then add the modgui resources and merge the
-# modgui triples into the plugin .ttl.
+# Assemble the MOD bundle the way mod-host/mod-ui expect (cf. megalo.lv2):
+#  - a single DSP binary, named plainly dirty_talk.so (drop DPF's _dsp suffix);
+#  - manifest.ttl -> seeAlso the plugin .ttl AND the modgui .ttl;
+#  - modgui.ttl at the bundle root, web resources under modgui/.
+DIRTY_TALK_URI = https://mod.audio/plugins/dirty-talk
 define DIRTY_TALK_INSTALL_TARGET_CMDS
-	mkdir -p $($(PKG)_PKGDIR)/dirty-talk.lv2
-	# the desktop X11 UI is kept in the bundle but ignored on MOD, which uses
-	# the web modgui below; keeping it avoids dangling ui:ui references.
-	cp -r $(@D)/bin/dirty_talk.lv2/. $($(PKG)_PKGDIR)/dirty-talk.lv2/
-	cp -r $(@D)/modgui $($(PKG)_PKGDIR)/dirty-talk.lv2/modgui
-	rm -f $($(PKG)_PKGDIR)/dirty-talk.lv2/modgui/modgui.ttl
-	cat $(@D)/modgui/modgui.ttl >> $($(PKG)_PKGDIR)/dirty-talk.lv2/dirty_talk_dsp.ttl
+	mkdir -p $($(PKG)_PKGDIR)/dirty-talk.lv2/modgui
+	# DSP binary + generated descriptor, renamed to the plain bundle name.
+	cp $(@D)/bin/dirty_talk.lv2/dirty_talk_dsp.so  $($(PKG)_PKGDIR)/dirty-talk.lv2/dirty_talk.so
+	cp $(@D)/bin/dirty_talk.lv2/dirty_talk_dsp.ttl $($(PKG)_PKGDIR)/dirty-talk.lv2/dirty_talk.ttl
+	# manifest: rewrite the _dsp references, then add the modgui seeAlso.
+	sed -e 's|dirty_talk_dsp\.so|dirty_talk.so|g' \
+	    -e 's|dirty_talk_dsp\.ttl|dirty_talk.ttl|g' \
+	    $(@D)/bin/dirty_talk.lv2/manifest.ttl > $($(PKG)_PKGDIR)/dirty-talk.lv2/manifest.ttl
+	printf '\n<%s>\n    rdfs:seeAlso <modgui.ttl> .\n' "$(DIRTY_TALK_URI)" \
+	    >> $($(PKG)_PKGDIR)/dirty-talk.lv2/manifest.ttl
+	# modgui: .ttl at the bundle root, web resources under modgui/.
+	cp $(@D)/modgui/modgui.ttl $($(PKG)_PKGDIR)/dirty-talk.lv2/modgui.ttl
+	cp $(@D)/modgui/dirty-talk.html $(@D)/modgui/stylesheet.css \
+	   $(@D)/modgui/screenshot.png $(@D)/modgui/thumbnail.png \
+	   $($(PKG)_PKGDIR)/dirty-talk.lv2/modgui/
 endef
 
 $(eval $(generic-package))
