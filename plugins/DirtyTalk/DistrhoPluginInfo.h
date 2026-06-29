@@ -8,7 +8,7 @@
 
 #define DISTRHO_PLUGIN_BRAND   "Pilal"
 #define DISTRHO_PLUGIN_NAME    "Dirty Talk"
-#define DISTRHO_PLUGIN_URI     "https://mod.audio/plugins/dirty-talk"
+#define DISTRHO_PLUGIN_URI     "https://github.com/pilali/Dirty-Talk"
 #define DISTRHO_PLUGIN_CLAP_ID "com.pilal.dirty-talk"
 
 // 4-char identifiers, required by AUv2 / used by VST2 / VST3 / CLAP

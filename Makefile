@@ -21,7 +21,7 @@ dpf/utils/lv2_ttl_generator$(APP_EXT):
 # mod-builder/dirty-talk.mk): a single DSP-only dirty_talk.so + generated
 # .ttl, modgui.ttl at the bundle root and web resources under modgui/.
 # Output: bin/dirty-talk.lv2/  (ready to drop on a mod-host/mod-ui device).
-DIRTY_TALK_URI = https://mod.audio/plugins/dirty-talk
+DIRTY_TALK_URI = https://github.com/pilali/Dirty-Talk
 
 mod: dpf/utils/lv2_ttl_generator$(APP_EXT)
 	rm -rf bin/dirty_talk.lv2 bin/dirty-talk.lv2

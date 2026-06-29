@@ -35,7 +35,7 @@ endef
 #  - a single DSP binary, named plainly dirty_talk.so (drop DPF's _dsp suffix);
 #  - manifest.ttl -> seeAlso the plugin .ttl AND the modgui .ttl;
 #  - modgui.ttl at the bundle root, web resources under modgui/.
-DIRTY_TALK_URI = https://mod.audio/plugins/dirty-talk
+DIRTY_TALK_URI = https://github.com/pilali/Dirty-Talk
 define DIRTY_TALK_INSTALL_TARGET_CMDS
 	mkdir -p $($(PKG)_PKGDIR)/dirty-talk.lv2/modgui
 	# DSP binary + generated descriptor, renamed to the plain bundle name.

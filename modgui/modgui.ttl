@@ -5,7 +5,7 @@
 @prefix lv2:    <http://lv2plug.in/ns/lv2core#> .
 @prefix modgui: <http://moddevices.com/ns/modgui#> .
 
-<https://mod.audio/plugins/dirty-talk>
+<https://github.com/pilali/Dirty-Talk>
     modgui:gui [
         a modgui:Gui ;
         modgui:resourcesDirectory <modgui> ;

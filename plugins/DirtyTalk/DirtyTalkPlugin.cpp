@@ -146,7 +146,7 @@ protected:
     const char* getLabel() const override       { return "Dirty Talk"; }
     const char* getDescription() const override { return "Lo-fi vocal distortion: vintage mic, phone line, megaphone or small speaker."; }
     const char* getMaker() const override       { return "Pilal"; }
-    const char* getHomePage() const override    { return "https://mod.audio/plugins/dirty-talk"; }
+    const char* getHomePage() const override    { return "https://github.com/pilali/Dirty-Talk"; }
     const char* getLicense() const override     { return "ISC"; }
     uint32_t getVersion() const override        { return d_version(1, 1, 0); }
     int64_t getUniqueId() const override        { return d_cconst('D', 't', 'T', 'k'); }
