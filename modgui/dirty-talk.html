@@ -7,10 +7,18 @@
         <h2>PILAL &middot; LO-FI VOCAL DISTORTION</h2>
     </div>
 
-    <!-- Mode selector (enumeration) -->
+    <!-- Mode selector (enumeration). custom-select initialises immediately
+         (unlike the default film widget, which stays disabled without a
+         filmstrip image or mod-widget-rotation). -->
     <div class="mode-row">
-        <div class="mode-enum" mod-role="input-control-port" mod-port-symbol="mode">
+        <div class="mode-enum" mod-role="input-control-port" mod-widget="custom-select" mod-port-symbol="mode">
             <div class="mode-readout" mod-role="input-control-value" mod-port-symbol="mode"></div>
+            <div class="mod-enumerated-list">
+                <div mod-role="enumeration-option" mod-port-value="0">Vintage Mic</div>
+                <div mod-role="enumeration-option" mod-port-value="1">Phone</div>
+                <div mod-role="enumeration-option" mod-port-value="2">Megaphone</div>
+                <div mod-role="enumeration-option" mod-port-value="3">Small Speaker</div>
+            </div>
         </div>
     </div>
 
@@ -18,25 +26,25 @@
     <div class="knob-row">
 
         <div class="knob-cell">
-            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="center_freq"></div>
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="center_freq" mod-widget-rotation="270"></div>
             <div class="knob-value" mod-role="input-control-value" mod-port-symbol="center_freq"></div>
             <div class="knob-label">FREQ</div>
         </div>
 
         <div class="knob-cell">
-            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="bandwidth"></div>
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="bandwidth" mod-widget-rotation="270"></div>
             <div class="knob-value" mod-role="input-control-value" mod-port-symbol="bandwidth"></div>
             <div class="knob-label">BANDWIDTH</div>
         </div>
 
         <div class="knob-cell">
-            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="gate"></div>
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="gate" mod-widget-rotation="270"></div>
             <div class="knob-value" mod-role="input-control-value" mod-port-symbol="gate"></div>
             <div class="knob-label">GATE</div>
         </div>
 
         <div class="knob-cell">
-            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="dry_wet"></div>
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="dry_wet" mod-widget-rotation="270"></div>
             <div class="knob-value" mod-role="input-control-value" mod-port-symbol="dry_wet"></div>
             <div class="knob-label">DRY/WET</div>
         </div>
