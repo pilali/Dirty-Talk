@@ -126,8 +126,10 @@ public:
     DirtyTalkPlugin()
         : Plugin(kParameterCount, 0, 0),
           fMode(0.0f), fFreq(1000.0f), fBandwidth(1.0f), fGate(-45.0f), fDryWet(1.0f),
+          fDrive(0.0f), fOutput(0.0f),
           fSampleRate(static_cast<float>(getSampleRate())),
           fFreqSmooth(1000.0f), fDryWetSmooth(1.0f),
+          fDriveSmooth(1.0f), fOutSmooth(1.0f),
           fG(0.0f), fK(1.0f), fA1(0.0f), fA2(0.0f), fA3(0.0f),
           fIc1(0.0f), fIc2(0.0f),
           fGateEnv(0.0f), fGateGain(0.0f), fCompEnv(0.0f),
@@ -148,7 +150,7 @@ protected:
     const char* getMaker() const override       { return "Pilal"; }
     const char* getHomePage() const override    { return "https://github.com/pilali/Dirty-Talk"; }
     const char* getLicense() const override     { return "ISC"; }
-    uint32_t getVersion() const override        { return d_version(1, 1, 0); }
+    uint32_t getVersion() const override        { return d_version(1, 2, 0); }
     int64_t getUniqueId() const override        { return d_cconst('D', 't', 'T', 'k'); }
 
    /* ----------------------------------------------------------------------------------------------------------
@@ -209,6 +211,22 @@ protected:
             parameter.ranges.min = 0.0f;
             parameter.ranges.max = 1.0f;
             break;
+        case kParamDrive:
+            parameter.name   = "Drive";
+            parameter.symbol = "drive";
+            parameter.unit   = "dB";
+            parameter.ranges.def = 0.0f;
+            parameter.ranges.min = -12.0f;
+            parameter.ranges.max = 24.0f;
+            break;
+        case kParamOutput:
+            parameter.name   = "Output";
+            parameter.symbol = "output";
+            parameter.unit   = "dB";
+            parameter.ranges.def = 0.0f;
+            parameter.ranges.min = -24.0f;
+            parameter.ranges.max = 24.0f;
+            break;
         }
     }
 
@@ -221,6 +239,8 @@ protected:
         case kParamBandwidth: return fBandwidth;
         case kParamGate:      return fGate;
         case kParamDryWet:    return fDryWet;
+        case kParamDrive:     return fDrive;
+        case kParamOutput:    return fOutput;
         default:              return 0.0f;
         }
     }
@@ -234,6 +254,8 @@ protected:
         case kParamBandwidth: fBandwidth = value; break;
         case kParamGate:      fGate = value;      break;
         case kParamDryWet:    fDryWet = value;    break;
+        case kParamDrive:     fDrive = value;     break;
+        case kParamOutput:    fOutput = value;    break;
         }
     }
 
@@ -256,6 +278,8 @@ protected:
         fDcX = fDcY = 0.0f;
         fFreqSmooth = fFreq;
         fDryWetSmooth = fDryWet;
+        fDriveSmooth = std::pow(10.0f, fDrive / 20.0f);
+        fOutSmooth   = std::pow(10.0f, fOutput / 20.0f);
         fOversampler.reset();
         updateCoeffs();
         fCurMode = -1;
@@ -283,7 +307,10 @@ protected:
         const float compAttack  = onePoleCoeff(0.010f, fSampleRate);
         const float compRelease = onePoleCoeff(0.100f, fSampleRate);
 
-        const float mixCoeff = onePoleCoeff(0.010f, fSampleRate);
+        const float mixCoeff  = onePoleCoeff(0.010f, fSampleRate);
+        const float gainCoeff = onePoleCoeff(0.010f, fSampleRate);
+        const float driveLin  = std::pow(10.0f, fDrive / 20.0f);
+        const float outLin    = std::pow(10.0f, fOutput / 20.0f);
 
         const int modeIdx = std::max(0, std::min(kNumModes - 1, static_cast<int>(fMode + 0.5f)));
         if (modeIdx != fCurMode)
@@ -325,6 +352,10 @@ protected:
             }
 
             // 4. DISTORTION (2x oversampled, anti-aliased)
+            // User drive pushes the signal into the per-mode waveshaper. At the
+            // 0 dB default (fDriveSmooth -> 1.0) the character is unchanged.
+            fDriveSmooth = fDriveSmooth * gainCoeff + driveLin * (1.0f - gainCoeff);
+            x *= fDriveSmooth;
             const int m = modeIdx;
             x = fOversampler.process(x, [m](float s){ return distortSample(m, s); });
 
@@ -339,18 +370,21 @@ protected:
             fDcY = dcY;
             x = dcY;
 
-            // 7. DRY/WET MIX (smoothed)
+            // 7. DRY/WET MIX (smoothed) + OUTPUT GAIN (smoothed)
             fDryWetSmooth = fDryWetSmooth * mixCoeff + fDryWet * (1.0f - mixCoeff);
-            out[i] = drySample * (1.0f - fDryWetSmooth) + x * fDryWetSmooth;
+            fOutSmooth    = fOutSmooth * gainCoeff + outLin * (1.0f - gainCoeff);
+            out[i] = (drySample * (1.0f - fDryWetSmooth) + x * fDryWetSmooth) * fOutSmooth;
         }
     }
 
 private:
     // raw parameter targets
     float fMode, fFreq, fBandwidth, fGate, fDryWet;
+    float fDrive, fOutput;   // dB
     float fSampleRate;
 
     float fFreqSmooth, fDryWetSmooth;
+    float fDriveSmooth, fOutSmooth;   // smoothed linear gains
 
     // TPT state-variable filter
     float fG, fK, fA1, fA2, fA3;

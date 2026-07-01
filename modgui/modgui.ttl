@@ -32,5 +32,9 @@
             lv2:index 5 ; lv2:symbol "gate"        ; lv2:name "Gate" ;
         ] , [
             lv2:index 6 ; lv2:symbol "dry_wet"     ; lv2:name "Dry/Wet" ;
+        ] , [
+            lv2:index 7 ; lv2:symbol "drive"       ; lv2:name "Drive" ;
+        ] , [
+            lv2:index 8 ; lv2:symbol "output"      ; lv2:name "Output" ;
         ] ;
     ] .

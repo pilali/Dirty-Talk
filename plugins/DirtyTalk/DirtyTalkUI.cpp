@@ -66,20 +66,23 @@ public:
         fFontName = NANOVG_DEJAVU_SANS_TTF;
        #endif
 
-        // four knobs across the lower part of the window
-        const float ky = 215.0f;
-        const float kx0 = 75.0f;
-        const float kdx = 110.0f;
+        // six knobs on two rows of three
+        const float kx0 = 110.0f, kdx = 130.0f;   // column centres: 110, 240, 370
+        const float ky0 = 175.0f, ky1 = 285.0f;   // row centres
 
-        fKnobs[0] = { kParamFreq,      "FREQ",      300.0f, 3000.0f, 1000.0f, true,  "%.0f Hz", kx0 + 0*kdx, ky };
-        fKnobs[1] = { kParamBandwidth, "BANDWIDTH", 0.2f,   4.0f,    1.0f,    false, "%.2f",    kx0 + 1*kdx, ky };
-        fKnobs[2] = { kParamGate,      "GATE",      -60.0f, 0.0f,    -45.0f,  false, "%.0f dB", kx0 + 2*kdx, ky };
-        fKnobs[3] = { kParamDryWet,    "DRY/WET",   0.0f,   1.0f,    1.0f,    false, "%.0f %%", kx0 + 3*kdx, ky };
+        fKnobs[0] = { kParamFreq,      "FREQ",      300.0f, 3000.0f, 1000.0f, true,  "%.0f Hz", kx0 + 0*kdx, ky0 };
+        fKnobs[1] = { kParamBandwidth, "BANDWIDTH", 0.2f,   4.0f,    1.0f,    false, "%.2f",    kx0 + 1*kdx, ky0 };
+        fKnobs[2] = { kParamGate,      "GATE",      -60.0f, 0.0f,    -45.0f,  false, "%.0f dB", kx0 + 2*kdx, ky0 };
+        fKnobs[3] = { kParamDrive,     "DRIVE",     -12.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 0*kdx, ky1 };
+        fKnobs[4] = { kParamOutput,    "OUTPUT",    -24.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 1*kdx, ky1 };
+        fKnobs[5] = { kParamDryWet,    "DRY/WET",   0.0f,   1.0f,    1.0f,    false, "%.0f %%", kx0 + 2*kdx, ky1 };
 
         fKnobVal[0] = 1000.0f;
         fKnobVal[1] = 1.0f;
         fKnobVal[2] = -45.0f;
-        fKnobVal[3] = 1.0f;
+        fKnobVal[3] = 0.0f;
+        fKnobVal[4] = 0.0f;
+        fKnobVal[5] = 1.0f;
 
         setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true);
     }
@@ -96,7 +99,7 @@ protected:
             repaint();
             return;
         }
-        for (int k = 0; k < 4; ++k)
+        for (int k = 0; k < kNumKnobs; ++k)
         {
             if (fKnobs[k].index == index)
             {
@@ -135,7 +138,7 @@ protected:
 
         drawModeSelector();
 
-        for (int k = 0; k < 4; ++k)
+        for (int k = 0; k < kNumKnobs; ++k)
             drawKnob(fKnobs[k], fKnobVal[k]);
     }
 
@@ -158,7 +161,7 @@ protected:
             }
 
             // knob?
-            for (int k = 0; k < 4; ++k)
+            for (int k = 0; k < kNumKnobs; ++k)
             {
                 if (insideKnob(fKnobs[k], ev.pos.getX(), ev.pos.getY()))
                 {
@@ -197,7 +200,7 @@ protected:
 
     bool onScroll(const ScrollEvent& ev) override
     {
-        for (int k = 0; k < 4; ++k)
+        for (int k = 0; k < kNumKnobs; ++k)
         {
             if (insideKnob(fKnobs[k], ev.pos.getX(), ev.pos.getY()))
             {
@@ -213,10 +216,12 @@ protected:
     }
 
 private:
+    static constexpr int kNumKnobs = 6;
+
     const char* fFontName;
     int   fMode;
-    KnobDesc fKnobs[4];
-    float fKnobVal[4];
+    KnobDesc fKnobs[kNumKnobs];
+    float fKnobVal[kNumKnobs];
 
     int    fDragKnob;
     double fDragStartY;

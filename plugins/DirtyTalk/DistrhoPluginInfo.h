@@ -28,7 +28,7 @@
 
 #define DISTRHO_UI_USE_NANOVG     1
 #define DISTRHO_UI_DEFAULT_WIDTH  480
-#define DISTRHO_UI_DEFAULT_HEIGHT 320
+#define DISTRHO_UI_DEFAULT_HEIGHT 360
 
 // Effect categorisation per format
 #define DISTRHO_PLUGIN_LV2_CATEGORY   "lv2:DistortionPlugin"
@@ -36,12 +36,18 @@
 #define DISTRHO_PLUGIN_CLAP_FEATURES  "audio-effect", "distortion", "mono"
 #define DISTRHO_PLUGIN_AU_TYPE        aufx
 
+// New parameters are appended so existing LV2 port indices stay stable
+// (audio in = 0, audio out = 1, control ports follow in this order: Mode = 2
+// ... Dry/Wet = 6, Drive = 7, Output = 8). The UI is free to lay them out in
+// any visual order regardless of these indices.
 enum Parameters {
     kParamMode = 0,
     kParamFreq,
     kParamBandwidth,
     kParamGate,
     kParamDryWet,
+    kParamDrive,
+    kParamOutput,
     kParameterCount
 };
 

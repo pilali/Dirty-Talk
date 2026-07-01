@@ -25,6 +25,8 @@ peaks/notches a single band-pass can't reproduce). The distortion stage is
 - **Center Freq** — input focus band-pass centre (300–3000 Hz, log)
 - **Bandwidth** — band-pass Q (0.2–4)
 - **Gate** — noise gate threshold (−60–0 dB), click-free smoothed gain
+- **Drive** — saturation amount driven into the waveshaper (−12–+24 dB, smoothed)
+- **Output** — output level applied to the final mix (−24–+24 dB, smoothed)
 - **Dry/Wet** — smoothed mix
 
 ## Formats
@@ -55,7 +57,9 @@ make gen        # generates the LV2 .ttl files (desktop dsp+ui bundle)
 make mod        # assembles the consolidated MOD bundle: bin/dirty-talk.lv2/
 ```
 
-Artifacts land in `bin/`. macOS universal binaries: `make MACOS_UNIVERSAL=true`.
+Artifacts land in `bin/`. macOS universal binaries (x86_64 + arm64, min macOS
+10.15): `make macos-universal-10.15` — a DPF convenience target. The old
+`MACOS_UNIVERSAL=true` variable is not understood by DPF and was a no-op.
 
 `make mod` produces the headless device bundle locally — a single DSP-only
 `dirty_talk.so`, generated `dirty_talk.ttl`, `modgui.ttl` and a `modgui/`
