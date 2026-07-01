@@ -19,14 +19,23 @@ START_NAMESPACE_DISTRHO
 using DGL_NAMESPACE::Color;
 
 // --------------------------------------------------------------------------------------------------------------
-// Palette
+// Palette - 1960s transistor-radio look (cream body, brass grille, red needle)
 
-static const Color kColBg     (24, 26, 30);
-static const Color kColPanel  (34, 37, 43);
-static const Color kColTrack  (52, 56, 64);
-static const Color kColAccent (235, 110, 70);   // warm orange
-static const Color kColText   (224, 226, 230);
-static const Color kColTextDim(132, 138, 148);
+static const Color kColBg      (215, 199, 162);  // cream body
+static const Color kColBgTop   (232, 220, 190);  // lighter top of body
+static const Color kColPanel   (239, 230, 207);  // cream pill (top)
+static const Color kColPanelLo (214, 196, 156);  // cream pill (bottom)
+static const Color kColTrack   (110,  83,  32);  // dark brass knob track
+static const Color kColAccent  (210,  70,  50);  // red tuning needle
+static const Color kColText    ( 70,  53,  31);  // dark brown
+static const Color kColTextDim (138, 109,  62);  // medium brown
+static const Color kColGold    (176, 144,  79);  // gold trim / borders
+static const Color kColGrille  (169, 132,  60);  // brass grille base
+static const Color kColGrilleDk( 90,  66,  22);  // grille perforation / frame
+static const Color kColKnobHi  (233, 207, 143);  // brass highlight
+static const Color kColKnobLo  (124,  94,  34);  // brass shadow
+static const Color kColKnobPtr ( 58,  37,  19);  // knob pointer
+static const Color kColGrilleTx(247, 238, 216);  // cream text over the grille
 
 // Knob geometry (270 degree sweep, pointing down at center)
 static const float kArcStart = 2.356194f;   //  135 deg
@@ -132,10 +141,10 @@ protected:
         const float w = static_cast<float>(getWidth());
         const float h = static_cast<float>(getHeight());
 
-        // background
+        // cream body with a soft top-lit gradient
         beginPath();
         rect(0.0f, 0.0f, w, h);
-        fillColor(kColBg);
+        fillPaint(linearGradient(0.0f, 0.0f, 0.0f, h, kColBgTop, kColBg));
         fill();
         closePath();
 
@@ -152,10 +161,51 @@ protected:
 
         drawModeSelector();
 
+        drawGrille();
         for (int k = 0; k < kNumKnobs; ++k)
             drawKnob(fKnobs[k], fKnobVal[k]);
 
         drawCabBar();
+
+        // gold maker script, bottom-right
+        fontSize(15.0f);
+        fillColor(kColGold);
+        textAlign(ALIGN_RIGHT | ALIGN_BOTTOM);
+        text(w - 18.0f, h - 12.0f, "Pilal", nullptr);
+    }
+
+    // Brass perforated speaker grille behind the two knob rows.
+    void drawGrille()
+    {
+        const float gx = 42.0f, gy = 146.0f, gw = 396.0f, gh = 202.0f, gr = 10.0f;
+
+        // brass panel with a diagonal sheen
+        beginPath();
+        roundedRect(gx, gy, gw, gh, gr);
+        fillPaint(linearGradient(gx, gy, gx + gw * 0.4f, gy + gh, kColKnobHi, kColGrille));
+        fill();
+        closePath();
+
+        // perforations: a dot grid clipped to the panel
+        scissor(gx + 3.0f, gy + 3.0f, gw - 6.0f, gh - 6.0f);
+        fillColor(kColGrilleDk);
+        for (float yy = gy + 10.0f; yy < gy + gh - 6.0f; yy += 13.0f)
+            for (float xx = gx + 10.0f; xx < gx + gw - 6.0f; xx += 13.0f)
+            {
+                beginPath();
+                circle(xx, yy, 1.4f);
+                fill();
+                closePath();
+            }
+        resetScissor();
+
+        // recessed brass frame
+        beginPath();
+        roundedRect(gx, gy, gw, gh, gr);
+        strokeColor(kColGrilleDk);
+        strokeWidth(2.5f);
+        stroke();
+        closePath();
     }
 
    /* ----------------------------------------------------------------------------------------------------------
@@ -330,11 +380,17 @@ private:
 
             beginPath();
             roundedRect(x, kModeY, kModeW, kModeH, 5.0f);
-            fillColor(active ? kColAccent : kColPanel);
+            if (active)
+                fillColor(kColAccent);
+            else
+                fillPaint(linearGradient(x, kModeY, x, kModeY + kModeH, kColPanel, kColPanelLo));
             fill();
+            strokeColor(kColGold);
+            strokeWidth(1.5f);
+            stroke();
             closePath();
 
-            fillColor(active ? kColBg : kColTextDim);
+            fillColor(active ? kColGrilleTx : kColText);
             text(x + kModeW * 0.5f, kModeY + kModeH * 0.5f, labels[i], nullptr);
         }
     }
@@ -353,13 +409,22 @@ private:
         return mx >= x && mx <= x + w && my >= y && my <= y + h;
     }
 
-    void drawStepBtn(float x, const char* glyph)
+    // A cream, gold-trimmed pill (the shared vintage control background).
+    void creamPill(float x, float y, float w, float h)
     {
         beginPath();
-        roundedRect(x, kCabY, kIRBtnW, kCabH, 5.0f);
-        fillColor(kColPanel);
+        roundedRect(x, y, w, h, 5.0f);
+        fillPaint(linearGradient(x, y, x, y + h, kColPanel, kColPanelLo));
         fill();
+        strokeColor(kColGold);
+        strokeWidth(1.5f);
+        stroke();
         closePath();
+    }
+
+    void drawStepBtn(float x, const char* glyph)
+    {
+        creamPill(x, kCabY, kIRBtnW, kCabH);
         fontSize(16.0f);
         fillColor(kColText);
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
@@ -370,27 +435,41 @@ private:
     {
         const float cy = kCabY + kCabH * 0.5f;
 
-        // on/off toggle
-        beginPath();
-        roundedRect(kCabTogX, kCabY, kCabTogW, kCabH, 5.0f);
-        fillColor(fCab ? kColAccent : kColPanel);
-        fill();
-        closePath();
+        // on/off toggle (red when on, like the pilot light)
+        if (fCab)
+        {
+            beginPath();
+            roundedRect(kCabTogX, kCabY, kCabTogW, kCabH, 5.0f);
+            fillColor(kColAccent);
+            fill();
+            strokeColor(kColGold);
+            strokeWidth(1.5f);
+            stroke();
+            closePath();
+        }
+        else
+        {
+            creamPill(kCabTogX, kCabY, kCabTogW, kCabH);
+        }
         fontSize(12.0f);
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
-        fillColor(fCab ? kColBg : kColTextDim);
+        fillColor(fCab ? kColGrilleTx : kColTextDim);
         text(kCabTogX + kCabTogW * 0.5f, cy, fCab ? "CAB ON" : "CAB OFF", nullptr);
 
-        // IR stepper
+        // IR stepper: < [ IR NN ] >
         drawStepBtn(kIRPrevX, "<");
         drawStepBtn(kIRNextX, ">");
+
+        const float dispX = kIRPrevX + kIRBtnW + 6.0f;
+        const float dispW = kIRNextX - 6.0f - dispX;
+        creamPill(dispX, kCabY, dispW, kCabH);
 
         char buf[32];
         std::snprintf(buf, sizeof(buf), "IR %02d", fCabIR + 1);
         fontSize(13.0f);
-        fillColor(fCab ? kColText : kColTextDim);
+        fillColor(kColText);
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
-        text((kIRPrevX + kIRBtnW + kIRNextX) * 0.5f, cy, buf, nullptr);
+        text(dispX + dispW * 0.5f, cy, buf, nullptr);
     }
 
     void setCab(int on)
@@ -443,7 +522,7 @@ private:
         stroke();
         closePath();
 
-        // value arc
+        // value arc (red needle colour)
         beginPath();
         arc(kd.cx, kd.cy, kKnobR, kArcStart, ang, NanoVG::CW);
         strokeColor(kColAccent);
@@ -451,11 +530,17 @@ private:
         stroke();
         closePath();
 
-        // knob body
+        // brass knob body (radial highlight top-left)
         beginPath();
         circle(kd.cx, kd.cy, kKnobR - 6.0f);
-        fillColor(kColPanel);
+        fillPaint(radialGradient(kd.cx - 6.0f, kd.cy - 8.0f, 2.0f, kKnobR - 2.0f, kColKnobHi, kColKnobLo));
         fill();
+        closePath();
+        beginPath();
+        circle(kd.cx, kd.cy, kKnobR - 6.0f);
+        strokeColor(kColGrilleDk);
+        strokeWidth(1.5f);
+        stroke();
         closePath();
 
         // pointer
@@ -464,26 +549,30 @@ private:
         beginPath();
         moveTo(kd.cx, kd.cy);
         lineTo(px, py);
-        strokeColor(kColText);
-        strokeWidth(2.0f);
+        strokeColor(kColKnobPtr);
+        strokeWidth(2.5f);
         stroke();
         closePath();
 
-        // value readout
+        // value readout (cream over the grille, with a soft dark shadow)
         char buf[32];
         float shown = value;
         if (kd.index == kParamDryWet)
             shown = value * 100.0f;
         std::snprintf(buf, sizeof(buf), kd.fmt, shown);
 
-        fontSize(12.0f);
-        fillColor(kColText);
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        fontSize(12.0f);
+        fillColor(kColGrilleDk);
+        text(kd.cx + 0.7f, kd.cy + kKnobR + 16.7f, buf, nullptr);
+        fillColor(kColGrilleTx);
         text(kd.cx, kd.cy + kKnobR + 16.0f, buf, nullptr);
 
         // label
         fontSize(10.0f);
-        fillColor(kColTextDim);
+        fillColor(kColGrilleDk);
+        text(kd.cx + 0.6f, kd.cy + kKnobR + 32.6f, kd.label, nullptr);
+        fillColor(kColGrilleTx);
         text(kd.cx, kd.cy + kKnobR + 32.0f, kd.label, nullptr);
     }
 
