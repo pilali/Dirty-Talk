@@ -22,19 +22,25 @@
 
         # Ports surfaced to the host (parameter list / hardware addressing).
         # The icon template binds each widget by lv2:symbol (mod-port-symbol).
+        # NOTE: DISTRHO_PLUGIN_WANT_LATENCY adds an lv2_latency output port at
+        # index 2, so the control ports start at index 3 (audio in = 0, out = 1).
         modgui:port [
-            lv2:index 2 ; lv2:symbol "mode"        ; lv2:name "Mode" ;
+            lv2:index 3 ; lv2:symbol "mode"        ; lv2:name "Mode" ;
         ] , [
-            lv2:index 3 ; lv2:symbol "center_freq" ; lv2:name "Center Freq" ;
+            lv2:index 4 ; lv2:symbol "center_freq" ; lv2:name "Center Freq" ;
         ] , [
-            lv2:index 4 ; lv2:symbol "bandwidth"   ; lv2:name "Bandwidth" ;
+            lv2:index 5 ; lv2:symbol "bandwidth"   ; lv2:name "Bandwidth" ;
         ] , [
-            lv2:index 5 ; lv2:symbol "gate"        ; lv2:name "Gate" ;
+            lv2:index 6 ; lv2:symbol "gate"        ; lv2:name "Gate" ;
         ] , [
-            lv2:index 6 ; lv2:symbol "dry_wet"     ; lv2:name "Dry/Wet" ;
+            lv2:index 7 ; lv2:symbol "dry_wet"     ; lv2:name "Dry/Wet" ;
         ] , [
-            lv2:index 7 ; lv2:symbol "drive"       ; lv2:name "Drive" ;
+            lv2:index 8 ; lv2:symbol "drive"       ; lv2:name "Drive" ;
         ] , [
-            lv2:index 8 ; lv2:symbol "output"      ; lv2:name "Output" ;
+            lv2:index 9 ; lv2:symbol "output"      ; lv2:name "Output" ;
+        ] , [
+            lv2:index 10 ; lv2:symbol "cab"        ; lv2:name "Cabinet" ;
+        ] , [
+            lv2:index 11 ; lv2:symbol "cab_ir"     ; lv2:name "Cab IR" ;
         ] ;
     ] .

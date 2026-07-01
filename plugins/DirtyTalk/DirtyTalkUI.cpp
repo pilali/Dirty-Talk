@@ -49,6 +49,8 @@ public:
     DirtyTalkUI()
         : UI(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT),
           fMode(0),
+          fCab(0),
+          fCabIR(0),
           fDragKnob(-1),
           fDragStartY(0.0),
           fDragStartVal(0.0f)
@@ -99,6 +101,18 @@ protected:
             repaint();
             return;
         }
+        if (index == kParamCab)
+        {
+            fCab = static_cast<int>(value + 0.5f);
+            repaint();
+            return;
+        }
+        if (index == kParamCabIR)
+        {
+            fCabIR = static_cast<int>(value + 0.5f);
+            repaint();
+            return;
+        }
         for (int k = 0; k < kNumKnobs; ++k)
         {
             if (fKnobs[k].index == index)
@@ -140,6 +154,8 @@ protected:
 
         for (int k = 0; k < kNumKnobs; ++k)
             drawKnob(fKnobs[k], fKnobVal[k]);
+
+        drawCabBar();
     }
 
    /* ----------------------------------------------------------------------------------------------------------
@@ -159,6 +175,10 @@ protected:
                 setMode(seg);
                 return true;
             }
+
+            // cabinet bar?
+            if (handleCabPress(ev.pos.getX(), ev.pos.getY()))
+                return true;
 
             // knob?
             for (int k = 0; k < kNumKnobs; ++k)
@@ -200,6 +220,14 @@ protected:
 
     bool onScroll(const ScrollEvent& ev) override
     {
+        // scroll over the cabinet bar cycles the IR
+        if (ev.pos.getY() >= kCabY && ev.pos.getY() <= kCabY + kCabH &&
+            ev.pos.getX() >= kIRPrevX && ev.pos.getX() <= kIRNextX + kIRBtnW)
+        {
+            stepIR(ev.delta.getY() > 0.0 ? +1 : -1);
+            return true;
+        }
+
         for (int k = 0; k < kNumKnobs; ++k)
         {
             if (insideKnob(fKnobs[k], ev.pos.getX(), ev.pos.getY()))
@@ -217,9 +245,14 @@ protected:
 
 private:
     static constexpr int kNumKnobs = 6;
+    // Keep in sync with dirtytalk_irs::kNumIRs in the DSP (the big IR header is
+    // not pulled into the UI translation unit just for this count).
+    static constexpr int kNumIRs = 20;
 
     const char* fFontName;
     int   fMode;
+    int   fCab;      // cabinet on/off
+    int   fCabIR;    // selected IR index
     KnobDesc fKnobs[kNumKnobs];
     float fKnobVal[kNumKnobs];
 
@@ -304,6 +337,87 @@ private:
             fillColor(active ? kColBg : kColTextDim);
             text(x + kModeW * 0.5f, kModeY + kModeH * 0.5f, labels[i], nullptr);
         }
+    }
+
+    // ---- cabinet bar (toggle + IR stepper) ----
+    static constexpr float kCabY    = 360.0f;
+    static constexpr float kCabH    = 30.0f;
+    static constexpr float kCabTogX = 40.0f;
+    static constexpr float kCabTogW = 96.0f;
+    static constexpr float kIRBtnW  = 30.0f;
+    static constexpr float kIRPrevX = 156.0f;
+    static constexpr float kIRNextX = 404.0f;
+
+    static bool inRect(float x, float y, float w, float h, double mx, double my)
+    {
+        return mx >= x && mx <= x + w && my >= y && my <= y + h;
+    }
+
+    void drawStepBtn(float x, const char* glyph)
+    {
+        beginPath();
+        roundedRect(x, kCabY, kIRBtnW, kCabH, 5.0f);
+        fillColor(kColPanel);
+        fill();
+        closePath();
+        fontSize(16.0f);
+        fillColor(kColText);
+        textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        text(x + kIRBtnW * 0.5f, kCabY + kCabH * 0.5f, glyph, nullptr);
+    }
+
+    void drawCabBar()
+    {
+        const float cy = kCabY + kCabH * 0.5f;
+
+        // on/off toggle
+        beginPath();
+        roundedRect(kCabTogX, kCabY, kCabTogW, kCabH, 5.0f);
+        fillColor(fCab ? kColAccent : kColPanel);
+        fill();
+        closePath();
+        fontSize(12.0f);
+        textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        fillColor(fCab ? kColBg : kColTextDim);
+        text(kCabTogX + kCabTogW * 0.5f, cy, fCab ? "CAB ON" : "CAB OFF", nullptr);
+
+        // IR stepper
+        drawStepBtn(kIRPrevX, "<");
+        drawStepBtn(kIRNextX, ">");
+
+        char buf[32];
+        std::snprintf(buf, sizeof(buf), "IR %02d", fCabIR + 1);
+        fontSize(13.0f);
+        fillColor(fCab ? kColText : kColTextDim);
+        textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        text((kIRPrevX + kIRBtnW + kIRNextX) * 0.5f, cy, buf, nullptr);
+    }
+
+    void setCab(int on)
+    {
+        fCab = on ? 1 : 0;
+        editParameter(kParamCab, true);
+        setParameterValue(kParamCab, static_cast<float>(fCab));
+        editParameter(kParamCab, false);
+        repaint();
+    }
+
+    void stepIR(int dir)
+    {
+        fCabIR = (fCabIR + dir + kNumIRs) % kNumIRs;
+        editParameter(kParamCabIR, true);
+        setParameterValue(kParamCabIR, static_cast<float>(fCabIR));
+        editParameter(kParamCabIR, false);
+        repaint();
+    }
+
+    // Returns true if the press was consumed by the cabinet bar.
+    bool handleCabPress(double mx, double my)
+    {
+        if (inRect(kCabTogX, kCabY, kCabTogW, kCabH, mx, my)) { setCab(!fCab); return true; }
+        if (inRect(kIRPrevX, kCabY, kIRBtnW, kCabH, mx, my))  { stepIR(-1);   return true; }
+        if (inRect(kIRNextX, kCabY, kIRBtnW, kCabH, mx, my))  { stepIR(+1);   return true; }
+        return false;
     }
 
     // ---- knob ----

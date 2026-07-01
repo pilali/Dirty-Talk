@@ -13,7 +13,8 @@ a **megaphone** or a **small speaker**. Built on the [DISTRHO Plugin Framework (
 
 ```
 in → noise gate → band-pass (TPT SVF, input focus) → light compressor
-   → distortion (2x oversampled) → device voicing (biquad cascade) → DC blocker → dry/wet → out
+   → drive → distortion (2x oversampled) → device voicing (biquad cascade)
+   → DC blocker → cabinet (IR convolution) → dry/wet → output → out
 ```
 
 Each mode pairs a **distortion character** with a **device voicing** (a small
@@ -28,6 +29,21 @@ peaks/notches a single band-pass can't reproduce). The distortion stage is
 - **Drive** — saturation amount driven into the waveshaper (−12–+24 dB, smoothed)
 - **Output** — output level applied to the final mix (−24–+24 dB, smoothed)
 - **Dry/Wet** — smoothed mix
+- **Cabinet** — on/off small-speaker impulse-response convolution
+- **Cab IR** — one of 20 embedded small-speaker impulse responses
+
+### Cabinet (IR convolution)
+
+The optional **Cabinet** stage runs the signal through a real small-speaker
+impulse response using a self-contained uniform-partitioned FFT convolver
+(`IRConvolver.hpp`, no external dependency). The 20 embedded IRs are resampled
+to the host rate at load time. Convolution adds a fixed one-block latency
+(256 samples) which is reported to the host for delay compensation.
+
+The impulse responses come from Jim's free "Small Speaker IR Pack"
+(HippieLoveTurbo.com) — see [IR_CREDITS.md](IR_CREDITS.md). They are embedded as
+a generated header (`plugins/DirtyTalk/DirtyTalkIRs.h`); regenerate with
+`python3 tools/gen_irs.py <pack-dir>`.
 
 ## Formats
 
@@ -76,6 +92,9 @@ plugins/DirtyTalk/   DSP, UI and build files
   DistrhoPluginInfo.h
   DirtyTalkPlugin.cpp   (DSP)
   DirtyTalkUI.cpp       (GUI - DGL/NanoVG)
+  IRConvolver.hpp       (partitioned FFT convolution engine)
+  DirtyTalkIRs.h        (generated: embedded small-speaker IRs)
+tools/gen_irs.py     regenerates DirtyTalkIRs.h from the source IR pack
 modgui/              classic MOD web UI (HTML/CSS + assets + modgui.ttl)
 mod-builder/         mod-plugin-builder package (dirty-talk.mk)
 dpf/                 DISTRHO Plugin Framework (git submodule)

@@ -3,7 +3,7 @@
 
 .mod-pedal.dirty-talk {
     width: 300px;
-    height: 470px;
+    height: 520px;
     background: #181a1e;
     border-radius: 10px;
     box-sizing: border-box;
@@ -122,6 +122,32 @@
     color: #848a94;
     margin-top: 2.5px;
 }
+
+/* cabinet row: on/off + IR selector (custom-select, like the mode enum) */
+.dirty-talk .cab-row {
+    display: flex;
+    gap: 7.5px;
+    margin-top: 15px;
+}
+.dirty-talk .cab-enum {
+    background: #22252b;
+    color: #e0e2e6;
+    border: 1px solid #34383f;
+    border-radius: 6.25px;
+    height: 28px;
+    line-height: 28px;
+    text-align: center;
+    font-size: 12.5px;
+    font-weight: 600;
+    letter-spacing: 0.625px;
+    cursor: pointer;
+    user-select: none;
+    position: relative;
+    z-index: 45;
+}
+.dirty-talk .cab-toggle { flex: 0 0 40%; }
+.dirty-talk .cab-select { flex: 1; }
+.dirty-talk .cab-readout { width: 100%; height: 100%; }
 
 /* bypass footswitch */
 .dirty-talk .dt-footswitch {

@@ -16,8 +16,12 @@
 #include "DistrhoPlugin.hpp"
 #include "extra/ScopedDenormalDisable.hpp"
 
+#include "IRConvolver.hpp"
+#include "DirtyTalkIRs.h"
+
 #include <cmath>
 #include <algorithm>
+#include <vector>
 
 #ifndef M_PI
 # define M_PI 3.14159265358979323846
@@ -116,9 +120,36 @@ private:
 };
 
 // --------------------------------------------------------------------------------------------------------------
+// Fixed integer delay (a plain ring buffer), used to align the dry and the
+// cabinet-bypass paths with the convolver's one-block latency.
+
+class FixedDelay
+{
+public:
+    void setup(int samples)
+    {
+        fBuf.assign(samples < 1 ? 1 : samples, 0.0f);
+        fPos = 0;
+    }
+    void reset() { std::fill(fBuf.begin(), fBuf.end(), 0.0f); fPos = 0; }
+    inline float process(float x)
+    {
+        const float y = fBuf[fPos];
+        fBuf[fPos] = x;
+        if (++fPos == static_cast<int>(fBuf.size()))
+            fPos = 0;
+        return y;
+    }
+private:
+    std::vector<float> fBuf;
+    int fPos = 0;
+};
+
+// --------------------------------------------------------------------------------------------------------------
 
 static const int kNumModes = 4;
 static const int kMaxVoicingSections = 5;
+static const int kCabBlock = 256;   // convolution block -> one-block latency
 
 class DirtyTalkPlugin : public Plugin
 {
@@ -126,10 +157,11 @@ public:
     DirtyTalkPlugin()
         : Plugin(kParameterCount, 0, 0),
           fMode(0.0f), fFreq(1000.0f), fBandwidth(1.0f), fGate(-45.0f), fDryWet(1.0f),
-          fDrive(0.0f), fOutput(0.0f),
+          fDrive(0.0f), fOutput(0.0f), fCab(0.0f), fCabIR(0.0f),
           fSampleRate(static_cast<float>(getSampleRate())),
           fFreqSmooth(1000.0f), fDryWetSmooth(1.0f),
-          fDriveSmooth(1.0f), fOutSmooth(1.0f),
+          fDriveSmooth(1.0f), fOutSmooth(1.0f), fCabSmooth(0.0f),
+          fCabLoadedIR(-1),
           fG(0.0f), fK(1.0f), fA1(0.0f), fA2(0.0f), fA3(0.0f),
           fIc1(0.0f), fIc2(0.0f),
           fGateEnv(0.0f), fGateGain(0.0f), fCompEnv(0.0f),
@@ -139,6 +171,7 @@ public:
         updateCoeffs();
         fOversampler.setup(fSampleRate);
         configureVoicing(0);
+        setupCab();
     }
 
 protected:
@@ -227,6 +260,34 @@ protected:
             parameter.ranges.min = -24.0f;
             parameter.ranges.max = 24.0f;
             break;
+        case kParamCab:
+            parameter.name   = "Cabinet";
+            parameter.symbol = "cab";
+            parameter.hints |= kParameterIsInteger | kParameterIsBoolean;
+            parameter.ranges.def = 0.0f;
+            parameter.ranges.min = 0.0f;
+            parameter.ranges.max = 1.0f;
+            break;
+        case kParamCabIR:
+            parameter.name   = "Cab IR";
+            parameter.symbol = "cab_ir";
+            parameter.hints |= kParameterIsInteger;
+            parameter.ranges.def = 0.0f;
+            parameter.ranges.min = 0.0f;
+            parameter.ranges.max = static_cast<float>(dirtytalk_irs::kNumIRs - 1);
+            {
+                const int n = dirtytalk_irs::kNumIRs;
+                ParameterEnumerationValue* const values = new ParameterEnumerationValue[n];
+                for (int i = 0; i < n; ++i)
+                {
+                    values[i].value = static_cast<float>(i);
+                    values[i].label = dirtytalk_irs::kIRNames[i];
+                }
+                parameter.enumValues.count = n;
+                parameter.enumValues.values = values;
+                parameter.enumValues.restrictedMode = true;
+            }
+            break;
         }
     }
 
@@ -241,6 +302,8 @@ protected:
         case kParamDryWet:    return fDryWet;
         case kParamDrive:     return fDrive;
         case kParamOutput:    return fOutput;
+        case kParamCab:       return fCab;
+        case kParamCabIR:     return fCabIR;
         default:              return 0.0f;
         }
     }
@@ -256,6 +319,8 @@ protected:
         case kParamDryWet:    fDryWet = value;    break;
         case kParamDrive:     fDrive = value;     break;
         case kParamOutput:    fOutput = value;    break;
+        case kParamCab:       fCab = value;       break;
+        case kParamCabIR:     fCabIR = value;     break;
         }
     }
 
@@ -267,6 +332,7 @@ protected:
         fSampleRate = static_cast<float>(newSampleRate);
         updateCoeffs();
         fOversampler.setup(fSampleRate);
+        setupCab();    // reallocates the convolver for the new rate
         fCurMode = -1; // force voicing rebuild at this sample rate
     }
 
@@ -281,6 +347,12 @@ protected:
         fDriveSmooth = std::pow(10.0f, fDrive / 20.0f);
         fOutSmooth   = std::pow(10.0f, fOutput / 20.0f);
         fOversampler.reset();
+        fConv.reset();
+        fDryDelay.reset();
+        fCabBypass.reset();
+        if (currentIRIndex() != fCabLoadedIR)
+            loadCabIR(currentIRIndex());
+        fCabSmooth = (fCab >= 0.5f) ? 1.0f : 0.0f;
         updateCoeffs();
         fCurMode = -1;
     }
@@ -315,6 +387,11 @@ protected:
         const int modeIdx = std::max(0, std::min(kNumModes - 1, static_cast<int>(fMode + 0.5f)));
         if (modeIdx != fCurMode)
             configureVoicing(modeIdx);
+
+        const int wantIR = currentIRIndex();
+        if (wantIR != fCabLoadedIR)
+            loadCabIR(wantIR);
+        const float cabTarget = (fCab >= 0.5f) ? 1.0f : 0.0f;
 
         for (uint32_t i = 0; i < frames; ++i)
         {
@@ -370,10 +447,22 @@ protected:
             fDcY = dcY;
             x = dcY;
 
+            // 6.5 CABINET (partitioned FFT convolution). The convolver adds a
+            // fixed one-block latency, so the bypass and dry paths are delayed
+            // by the same amount to stay phase-aligned; the total is reported
+            // to the host via setLatency(). Toggling the cabinet crossfades
+            // between the delayed dry-core and the convolved signal.
+            const float convOut     = fConv.processSample(x);
+            const float coreDelayed = fCabBypass.process(x);
+            fCabSmooth = fCabSmooth * gainCoeff + cabTarget * (1.0f - gainCoeff);
+            const float cabbed = coreDelayed + (convOut - coreDelayed) * fCabSmooth;
+
+            const float dryDelayed = fDryDelay.process(drySample);
+
             // 7. DRY/WET MIX (smoothed) + OUTPUT GAIN (smoothed)
             fDryWetSmooth = fDryWetSmooth * mixCoeff + fDryWet * (1.0f - mixCoeff);
             fOutSmooth    = fOutSmooth * gainCoeff + outLin * (1.0f - gainCoeff);
-            out[i] = (drySample * (1.0f - fDryWetSmooth) + x * fDryWetSmooth) * fOutSmooth;
+            out[i] = (dryDelayed * (1.0f - fDryWetSmooth) + cabbed * fDryWetSmooth) * fOutSmooth;
         }
     }
 
@@ -381,10 +470,19 @@ private:
     // raw parameter targets
     float fMode, fFreq, fBandwidth, fGate, fDryWet;
     float fDrive, fOutput;   // dB
+    float fCab, fCabIR;      // cabinet on/off, selected IR index
     float fSampleRate;
 
     float fFreqSmooth, fDryWetSmooth;
     float fDriveSmooth, fOutSmooth;   // smoothed linear gains
+    float fCabSmooth;                 // smoothed cabinet on/off crossfade
+
+    // cabinet (IR convolution)
+    IRConvolver        fConv;
+    FixedDelay         fDryDelay;      // aligns dry path with convolver latency
+    FixedDelay         fCabBypass;     // aligns cab-off path with convolver latency
+    std::vector<float> fIRresampled;   // scratch: IR resampled to host rate
+    int                fCabLoadedIR;   // IR index currently in the convolver
 
     // TPT state-variable filter
     float fG, fK, fA1, fA2, fA3;
@@ -476,6 +574,58 @@ private:
             break;
         }
         fCurMode = mode;
+    }
+
+    int currentIRIndex() const
+    {
+        int idx = static_cast<int>(fCabIR + 0.5f);
+        if (idx < 0) idx = 0;
+        if (idx > dirtytalk_irs::kNumIRs - 1) idx = dirtytalk_irs::kNumIRs - 1;
+        return idx;
+    }
+
+    // Allocate the convolver + delay lines for the current sample rate and load
+    // the selected IR. Allocates -- call off the audio thread only.
+    void setupCab()
+    {
+        const double ratio = static_cast<double>(fSampleRate) / dirtytalk_irs::kIRSampleRate;
+        const int outLen = static_cast<int>(std::ceil(dirtytalk_irs::kIRLength * ratio)) + 1;
+        fIRresampled.assign(outLen, 0.0f);
+        fConv.prepare(outLen, kCabBlock);
+
+        const int lat = fConv.latency();
+        fDryDelay.setup(lat);
+        fCabBypass.setup(lat);
+        setLatency(static_cast<uint32_t>(lat));
+
+        fCabLoadedIR = -1;
+        loadCabIR(currentIRIndex());
+        fCabSmooth = (fCab >= 0.5f) ? 1.0f : 0.0f;
+    }
+
+    // Resample the selected IR from its stored 44.1 kHz to the host rate and
+    // hand it to the convolver. No allocation (buffers sized by setupCab), so
+    // this is safe to call on an IR change from the audio thread.
+    void loadCabIR(int idx)
+    {
+        using namespace dirtytalk_irs;
+        const double ratio = static_cast<double>(fSampleRate) / kIRSampleRate;
+        int outLen = static_cast<int>(std::ceil(kIRLength * ratio));
+        if (outLen > static_cast<int>(fIRresampled.size()))
+            outLen = static_cast<int>(fIRresampled.size());
+
+        const float* const src = kIRData[idx];
+        for (int n = 0; n < outLen; ++n)
+        {
+            const double sp = n / ratio;           // source position for output n
+            const int i0 = static_cast<int>(sp);
+            const float frac = static_cast<float>(sp - i0);
+            const float a = (i0     < kIRLength) ? src[i0]     : 0.0f;
+            const float b = (i0 + 1 < kIRLength) ? src[i0 + 1] : 0.0f;
+            fIRresampled[n] = a + (b - a) * frac;
+        }
+        fConv.setIR(fIRresampled.data(), outLen);
+        fCabLoadedIR = idx;
     }
 
     void updateCoeffs()

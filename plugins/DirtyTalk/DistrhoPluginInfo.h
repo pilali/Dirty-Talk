@@ -25,10 +25,13 @@
 #define DISTRHO_PLUGIN_NUM_INPUTS  1
 #define DISTRHO_PLUGIN_NUM_OUTPUTS 1
 #define DISTRHO_PLUGIN_WANT_STATE  0
+// The Cabinet stage uses partitioned FFT convolution, which adds a fixed
+// one-block latency; report it so the host can delay-compensate.
+#define DISTRHO_PLUGIN_WANT_LATENCY 1
 
 #define DISTRHO_UI_USE_NANOVG     1
 #define DISTRHO_UI_DEFAULT_WIDTH  480
-#define DISTRHO_UI_DEFAULT_HEIGHT 360
+#define DISTRHO_UI_DEFAULT_HEIGHT 410
 
 // Effect categorisation per format
 #define DISTRHO_PLUGIN_LV2_CATEGORY   "lv2:DistortionPlugin"
@@ -48,6 +51,8 @@ enum Parameters {
     kParamDryWet,
     kParamDrive,
     kParamOutput,
+    kParamCab,      // Cabinet IR convolution on/off (port 9)
+    kParamCabIR,    // selected impulse response      (port 10)
     kParameterCount
 };
 
