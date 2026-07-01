@@ -4,7 +4,7 @@
 
 .mod-pedal.dirty-talk {
     width: 300px;
-    height: 485px;
+    height: 505px;
     background-color: #d7c7a2;
     background-image:
         repeating-linear-gradient(0deg,  rgba(120,95,55,0.06) 0 1px, transparent 1px 3px),
@@ -36,15 +36,35 @@
     pointer-events: none;
 }
 
-.dirty-talk .mod-plugin-title { text-align: left; margin-bottom: 10px; }
+.dirty-talk .mod-plugin-title { text-align: left; margin-bottom: 12px; }
+/* Vintage radio-set nameplate: embossed gold italic serif wordmark with a
+   gold underline rule. Solid colour + text-shadow (no background-clip) so it
+   renders reliably on the device's browser. */
 .dirty-talk .mod-plugin-title h1 {
-    font-size: 24px; font-weight: 800; letter-spacing: 1px;
-    margin: 0; color: #46351f;
-    text-shadow: 0 1px 0 rgba(255,250,235,0.55);
+    display: inline-block;
+    font-family: Georgia, 'DejaVu Serif', 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 30px;
+    letter-spacing: 1.5px;
+    margin: 0;
+    color: #b58a3a;
+    text-shadow: 0 1px 0 rgba(255,250,235,0.65),
+                 0 -1px 0 rgba(80,55,20,0.25),
+                 0 2px 3px rgba(50,30,10,0.35);
+}
+.dirty-talk .mod-plugin-title h1:after {
+    content: '';
+    display: block;
+    height: 2px;
+    margin-top: 3px;
+    background: linear-gradient(90deg, #8a642a, #e0c079 45%, #8a642a);
+    border-radius: 1px;
+    box-shadow: 0 1px 0 rgba(255,250,235,0.5);
 }
 .dirty-talk .mod-plugin-title h2 {
-    font-size: 9.5px; font-weight: 600; letter-spacing: 2px;
-    margin: 3px 0 0 0; color: #8a6d3e;
+    font-size: 9.5px; font-weight: 600; letter-spacing: 3px;
+    margin: 5px 0 0 0; color: #8a6d3e;
 }
 
 /* tuning-dial / station display (mode selector) */

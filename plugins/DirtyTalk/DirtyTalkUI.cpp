@@ -148,16 +148,32 @@ protected:
         fill();
         closePath();
 
-        // title
+        // title - embossed gold italic nameplate (vintage radio-set wordmark)
         fontFace(fFontName);
-        fontSize(26.0f);
-        fillColor(kColText);
         textAlign(ALIGN_LEFT | ALIGN_TOP);
-        text(24.0f, 20.0f, "DIRTY TALK", nullptr);
+        save();
+        translate(24.0f, 18.0f);
+        skewX(-0.16f);                            // italic lean
+        fontSize(28.0f);
+        fillColor(kColGrilleDk);                  // engraved shadow
+        text(0.6f, 2.0f, "DIRTY TALK", nullptr);
+        fillColor(kColKnobHi);                    // top highlight
+        text(0.0f, -1.0f, "DIRTY TALK", nullptr);
+        fillColor(kColGold);                      // gold face
+        text(0.0f, 0.0f, "DIRTY TALK", nullptr);
+        restore();
 
+        // nameplate underline rule
+        beginPath();
+        roundedRect(24.0f, 50.0f, 232.0f, 2.5f, 1.25f);
+        fillPaint(linearGradient(24.0f, 0.0f, 256.0f, 0.0f, kColKnobLo, kColKnobHi));
+        fill();
+        closePath();
+
+        // subtitle
         fontSize(11.0f);
         fillColor(kColTextDim);
-        text(26.0f, 50.0f, "PILAL  -  LO-FI VOCAL DISTORTION", nullptr);
+        text(26.0f, 58.0f, "PILAL  -  LO-FI VOCAL DISTORTION", nullptr);
 
         drawModeSelector();
 
