@@ -46,8 +46,11 @@ jobs:
       - name: Verify architectures and min macOS version
         # Guards the two things that make the plugin load on old macOS:
         #  1. both x86_64 and arm64 slices are present (universal), and
-        #  2. every slice is tagged minos 10.15 -- if the deployment target
-        #     ever creeps up to the runner's OS again, this fails the build.
+        #  2. each slice is tagged with the right deployment target.
+        # The x86_64 slice must be minos 10.15 (Catalina / old Intel Macs).
+        # The arm64 slice is always minos 11.0: Apple Silicon does not exist
+        # before macOS 11, so the linker floors arm64 at 11.0 regardless of
+        # -mmacosx-version-min. That is expected, not a regression.
         run: |
           status=0
           while IFS= read -r f; do
@@ -56,10 +59,11 @@ jobs:
             echo "$f: [$archs]"
             case " $archs " in *" x86_64 "*) ;; *) echo "  ERROR: missing x86_64"; status=1 ;; esac
             case " $archs " in *" arm64 "*) ;; *) echo "  ERROR: missing arm64"; status=1 ;; esac
-            while IFS= read -r minos; do
-              echo "  minos $minos"
-              [ "$minos" = "10.15" ] || { echo "  ERROR: deployment target $minos, expected 10.15"; status=1; }
-            done < <(vtool -show-build "$f" 2>/dev/null | awk '/minos/{print $2}')
+            x86min=$(vtool -arch x86_64 -show-build "$f" 2>/dev/null | awk '/minos/{print $2}')
+            armmin=$(vtool -arch arm64 -show-build "$f" 2>/dev/null | awk '/minos/{print $2}')
+            echo "  x86_64 minos ${x86min:-none}, arm64 minos ${armmin:-none}"
+            [ "$x86min" = "10.15" ] || { echo "  ERROR: x86_64 deployment target ${x86min:-none}, expected 10.15"; status=1; }
+            [ "$armmin" = "11.0" ]  || { echo "  ERROR: arm64 deployment target ${armmin:-none}, expected 11.0"; status=1; }
           done < <(find bin -type f)
           exit $status
       - uses: actions/upload-artifact@v4
