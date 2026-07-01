@@ -35,10 +35,27 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: recursive
-      - name: Build (universal2)
-        run: make -j$(sysctl -n hw.ncpu) MACOS_UNIVERSAL=true
+      - name: Build (universal)
+        # DPF ships a convenience target that injects "-arch x86_64 -arch arm64"
+        # into the build flags. The old "MACOS_UNIVERSAL=true" variable is not
+        # understood by DPF and was silently ignored, producing a single-arch
+        # (arm64) build on the Apple Silicon runner.
+        run: make macos-universal-10.15 -j$(sysctl -n hw.ncpu)
       - name: Generate LV2 ttl
-        run: make gen MACOS_UNIVERSAL=true
+        run: make gen
+      - name: Verify universal binaries
+        run: |
+          status=0
+          while IFS= read -r f; do
+            file "$f" | grep -q 'Mach-O' || continue
+            archs=$(lipo -archs "$f" 2>/dev/null)
+            echo "$f: $archs"
+            case " $archs " in
+              *" x86_64 "*) case " $archs " in *" arm64 "*) ;; *) echo "  ERROR: missing arm64"; status=1 ;; esac ;;
+              *) echo "  ERROR: missing x86_64"; status=1 ;;
+            esac
+          done < <(find bin -type f)
+          exit $status
       - uses: actions/upload-artifact@v4
         with:
           name: dirty-talk-macos
