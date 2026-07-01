@@ -37,34 +37,25 @@
 }
 
 .dirty-talk .mod-plugin-title { text-align: left; margin-bottom: 12px; }
-/* Vintage radio-set nameplate: embossed gold italic serif wordmark with a
-   gold underline rule. Solid colour + text-shadow (no background-clip) so it
-   renders reliably on the device's browser. */
+/* Raised-metal wordmark after an embossed "TRANSISTOR" radio nameplate:
+   upright, widely tracked uppercase in dark bronze, with a light top-left
+   highlight and a soft drop shadow so the letters look raised off the body. */
 .dirty-talk .mod-plugin-title h1 {
-    display: inline-block;
-    font-family: Georgia, 'DejaVu Serif', 'Times New Roman', serif;
-    font-style: italic;
-    font-weight: 700;
-    font-size: 30px;
-    letter-spacing: 1.5px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-weight: 800;
+    font-size: 25px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
     margin: 0;
-    color: #b58a3a;
-    text-shadow: 0 1px 0 rgba(255,250,235,0.65),
-                 0 -1px 0 rgba(80,55,20,0.25),
-                 0 2px 3px rgba(50,30,10,0.35);
-}
-.dirty-talk .mod-plugin-title h1:after {
-    content: '';
-    display: block;
-    height: 2px;
-    margin-top: 3px;
-    background: linear-gradient(90deg, #8a642a, #e0c079 45%, #8a642a);
-    border-radius: 1px;
-    box-shadow: 0 1px 0 rgba(255,250,235,0.5);
+    color: #5f4127;
+    text-shadow:
+        -1px -1px 0 rgba(245,232,200,0.7),
+         1px  1px 0 rgba(35,22,8,0.5),
+         2px  3px 4px rgba(35,22,8,0.35);
 }
 .dirty-talk .mod-plugin-title h2 {
     font-size: 9.5px; font-weight: 600; letter-spacing: 3px;
-    margin: 5px 0 0 0; color: #8a6d3e;
+    margin: 6px 0 0 0; color: #8a6d3e;
 }
 
 /* tuning-dial / station display (mode selector) */

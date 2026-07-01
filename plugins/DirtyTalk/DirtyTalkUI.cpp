@@ -148,32 +148,25 @@ protected:
         fill();
         closePath();
 
-        // title - embossed gold italic nameplate (vintage radio-set wordmark)
+        // title - raised bronze metal letters (vintage "TRANSISTOR" nameplate):
+        // upright, widely tracked, with a light top-left highlight and a soft
+        // drop shadow so the letters look raised off the cream body.
         fontFace(fFontName);
         textAlign(ALIGN_LEFT | ALIGN_TOP);
-        save();
-        translate(24.0f, 18.0f);
-        skewX(-0.16f);                            // italic lean
-        fontSize(28.0f);
-        fillColor(kColGrilleDk);                  // engraved shadow
-        text(0.6f, 2.0f, "DIRTY TALK", nullptr);
-        fillColor(kColKnobHi);                    // top highlight
-        text(0.0f, -1.0f, "DIRTY TALK", nullptr);
-        fillColor(kColGold);                      // gold face
-        text(0.0f, 0.0f, "DIRTY TALK", nullptr);
-        restore();
-
-        // nameplate underline rule
-        beginPath();
-        roundedRect(24.0f, 50.0f, 232.0f, 2.5f, 1.25f);
-        fillPaint(linearGradient(24.0f, 0.0f, 256.0f, 0.0f, kColKnobLo, kColKnobHi));
-        fill();
-        closePath();
+        fontSize(24.0f);
+        textLetterSpacing(5.0f);
+        fillColor(Color(35, 22, 8));              // cast shadow (down-right)
+        text(26.0f, 23.0f, "DIRTY TALK", nullptr);
+        fillColor(kColBgTop);                     // top-left highlight
+        text(23.0f, 19.0f, "DIRTY TALK", nullptr);
+        fillColor(Color(95, 65, 39));             // dark bronze face
+        text(24.0f, 20.0f, "DIRTY TALK", nullptr);
+        textLetterSpacing(0.0f);
 
         // subtitle
         fontSize(11.0f);
         fillColor(kColTextDim);
-        text(26.0f, 58.0f, "PILAL  -  LO-FI VOCAL DISTORTION", nullptr);
+        text(26.0f, 52.0f, "PILAL  -  LO-FI VOCAL DISTORTION", nullptr);
 
         drawModeSelector();
 
