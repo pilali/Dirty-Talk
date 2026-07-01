@@ -54,9 +54,16 @@ public:
           fDragStartVal(0.0f)
     {
        #ifdef DGL_NO_SHARED_RESOURCES
+        // Custom font loaded from disk under our own name.
         createFontFromFile("sans", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+        fFontName = "sans";
        #else
+        // loadSharedResources() registers DPF's built-in DejaVu Sans under the
+        // internal name NANOVG_DEJAVU_SANS_TTF -- NOT "sans". Selecting "sans"
+        // here would find no font and NanoVG would silently draw no text at all
+        // (the bug this replaces). Reference the actual registered name instead.
         loadSharedResources();
+        fFontName = NANOVG_DEJAVU_SANS_TTF;
        #endif
 
         // four knobs across the lower part of the window
@@ -116,7 +123,7 @@ protected:
         closePath();
 
         // title
-        fontFace("sans");
+        fontFace(fFontName);
         fontSize(26.0f);
         fillColor(kColText);
         textAlign(ALIGN_LEFT | ALIGN_TOP);
@@ -206,6 +213,7 @@ protected:
     }
 
 private:
+    const char* fFontName;
     int   fMode;
     KnobDesc fKnobs[4];
     float fKnobVal[4];
