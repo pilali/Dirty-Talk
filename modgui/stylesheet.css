@@ -1,51 +1,75 @@
-/* Dirty Talk - modgui stylesheet (sober dark, flat) */
-/* All dimensions scaled +25% from the original 240x300 layout. */
+/* Dirty Talk - modgui stylesheet: 1960s transistor-radio look         */
+/* Cream leatherette body, brass perforated speaker grille, gold trim, */
+/* red tuning-needle accent. Dimensions scaled +25% from 240x300.       */
 
 .mod-pedal.dirty-talk {
     width: 300px;
     height: 485px;
-    background: #181a1e;
-    border-radius: 10px;
+    background-color: #d7c7a2;
+    background-image:
+        repeating-linear-gradient(0deg,  rgba(120,95,55,0.06) 0 1px, transparent 1px 3px),
+        repeating-linear-gradient(90deg, rgba(120,95,55,0.05) 0 1px, transparent 1px 3px),
+        radial-gradient(circle at 28% 12%, rgba(255,250,235,0.55), rgba(255,250,235,0) 60%);
+    border: 2px solid #b0904f;
+    border-radius: 14px;
     box-sizing: border-box;
-    padding: 17.5px 15px;
+    padding: 16px 15px;
     font-family: 'Helvetica Neue', Arial, sans-serif;
-    color: #e0e2e6;
+    color: #4a3826;
     position: relative;
+    box-shadow: inset 0 0 0 4px rgba(255,250,235,0.20),
+                inset 0 2px 6px rgba(90,65,25,0.18);
 }
 
-.dirty-talk .mod-plugin-title { text-align: left; margin-bottom: 12.5px; }
+/* gold brand script, bottom-right, like the radio's maker plate */
+.dirty-talk:after {
+    content: "Pilal";
+    position: absolute;
+    right: 16px;
+    bottom: 12px;
+    font-style: italic;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    color: #9c7b3c;
+    text-shadow: 0 1px 0 rgba(255,250,235,0.5);
+    pointer-events: none;
+}
+
+.dirty-talk .mod-plugin-title { text-align: left; margin-bottom: 10px; }
 .dirty-talk .mod-plugin-title h1 {
-    font-size: 23.75px; font-weight: 700; letter-spacing: 1.25px;
-    margin: 0; color: #e0e2e6;
+    font-size: 24px; font-weight: 800; letter-spacing: 1px;
+    margin: 0; color: #46351f;
+    text-shadow: 0 1px 0 rgba(255,250,235,0.55);
 }
 .dirty-talk .mod-plugin-title h2 {
-    font-size: 10px; font-weight: 400; letter-spacing: 1.875px;
-    margin: 2.5px 0 0 0; color: #848a94;
+    font-size: 9.5px; font-weight: 600; letter-spacing: 2px;
+    margin: 3px 0 0 0; color: #8a6d3e;
 }
 
-/* mode selector */
-.dirty-talk .mode-row { margin: 7.5px 0 17.5px 0; }
+/* tuning-dial / station display (mode selector) */
+.dirty-talk .mode-row { margin: 6px 0 14px 0; }
 .dirty-talk .mode-enum {
-    background: #eb6e46;
-    color: #181a1e;
+    background: linear-gradient(180deg, #efe6cf, #d6c49c);
+    color: #46351f;
+    border: 1.5px solid #b0904f;
     border-radius: 6.25px;
-    height: 32.5px;
-    line-height: 32.5px;
+    height: 32px;
+    line-height: 32px;
     text-align: center;
     font-size: 15px;
     font-weight: 700;
-    letter-spacing: 1.25px;
+    letter-spacing: 1px;
     cursor: pointer;
     user-select: none;
-    /* sit above MOD-UI core's drag-handle (z-index 20, swallows clicks) AND
-       above the knobs (z-index 30) so the open dropdown — bounded by this
-       element's stacking context — paints over them instead of behind. */
     position: relative;
     z-index: 50;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.55),
+                inset 0 -2px 4px rgba(120,95,55,0.20);
 }
 .dirty-talk .mode-readout { width: 100%; height: 100%; }
 
-/* mode enumeration dropdown (custom-select widget toggles its display) */
+/* enumeration dropdown (custom-select toggles display) */
 .dirty-talk .mod-enumerated-list {
     display: none;
     position: absolute;
@@ -53,8 +77,8 @@
     left: 0;
     right: 0;
     margin-top: 3.75px;
-    background: #22252b;
-    border: 1px solid #34383f;
+    background: #efe6cf;
+    border: 1.5px solid #b0904f;
     border-radius: 6.25px;
     /* Bound the height and scroll instead of listing all 20 IRs, which would
        run far off the pedal and out of view. */
@@ -62,115 +86,136 @@
     overflow-x: hidden;
     overflow-y: auto;
     z-index: 40;
+    box-shadow: 0 4px 10px rgba(60,40,15,0.35);
 }
-/* subtle scrollbar for the enumeration lists */
 .dirty-talk .mod-enumerated-list::-webkit-scrollbar { width: 8px; }
 .dirty-talk .mod-enumerated-list::-webkit-scrollbar-thumb {
-    background: #4a4f57; border-radius: 4px;
+    background: #b0904f; border-radius: 4px;
 }
-/* The cabinet IR selector sits low on the pedal, so open its list upward to
-   keep it within the panel rather than dropping off the bottom. */
+.dirty-talk .mod-enumerated-list [mod-role=enumeration-option] {
+    padding: 7.5px 10px;
+    font-size: 13.75px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #46351f;
+    text-align: center;
+    cursor: pointer;
+}
+.dirty-talk .mod-enumerated-list [mod-role=enumeration-option]:hover {
+    background: #c0453a;
+    color: #f5ecd6;
+}
+.dirty-talk .mod-enumerated-list [mod-role=enumeration-option].selected {
+    color: #c0453a;
+}
+/* the cabinet IR selector sits low, so open its list upward */
 .dirty-talk .cab-select .mod-enumerated-list {
     top: auto;
     bottom: 100%;
     margin-top: 0;
     margin-bottom: 3.75px;
 }
-.dirty-talk .mod-enumerated-list [mod-role=enumeration-option] {
-    padding: 7.5px 10px;
-    font-size: 13.75px;
-    font-weight: 600;
-    letter-spacing: 0.625px;
-    color: #e0e2e6;
-    text-align: center;
-    cursor: pointer;
-}
-.dirty-talk .mod-enumerated-list [mod-role=enumeration-option]:hover {
-    background: #eb6e46;
-    color: #181a1e;
-}
-.dirty-talk .mod-enumerated-list [mod-role=enumeration-option].selected {
-    color: #eb6e46;
+
+/* brass perforated speaker grille holding the knobs */
+.dirty-talk .grille {
+    background-color: #a9843c;
+    background-image:
+        radial-gradient(circle at center, rgba(55,35,10,0.55) 1px, rgba(55,35,10,0) 1.7px),
+        linear-gradient(180deg, rgba(255,235,180,0.35), rgba(90,65,25,0.28));
+    background-size: 7px 7px, 100% 100%;
+    background-position: 0 0, 0 0;
+    border: 2px solid #7c5e22;
+    border-radius: 8px;
+    padding: 12px 8px 10px 8px;
+    margin: 0 0 12px 0;
+    box-shadow: inset 0 2px 7px rgba(40,25,5,0.45),
+                0 1px 0 rgba(255,250,235,0.30);
 }
 
-/* knobs */
+/* knobs: brass with a dark pointer */
 .dirty-talk .knob-row {
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
 }
+.dirty-talk .grille .knob-row:first-child { margin-top: 0; }
 .dirty-talk .knob-cell {
     flex: 1;
     text-align: center;
 }
 .dirty-talk .dt-knob {
-    width: 55px;
-    height: 55px;
+    width: 52px;
+    height: 52px;
     margin: 0 auto;
     border-radius: 50%;
-    background: #22252b;
-    border: 3.75px solid #34383f;
+    background: radial-gradient(circle at 38% 30%, #e9cf8f, #bd9636 60%, #7c5e22);
+    border: 2px solid #6a4f1e;
     box-sizing: border-box;
     position: relative;
-    z-index: 30; /* keep clickable above the drag-handle */
+    z-index: 30;
     cursor: ns-resize;
+    box-shadow: 0 2px 4px rgba(30,18,4,0.45),
+                inset 0 1px 2px rgba(255,245,210,0.6);
 }
-/* pointer indicator (rotated by MOD runtime via transform on the port element) */
 .dirty-talk .dt-knob:after {
     content: '';
     position: absolute;
     left: 50%;
     top: 5px;
-    width: 2.5px;
-    height: 17.5px;
-    margin-left: -1.25px;
-    background: #eb6e46;
-    border-radius: 1.25px;
+    width: 3px;
+    height: 16px;
+    margin-left: -1.5px;
+    background: #3a2513;
+    border-radius: 1.5px;
 }
 .dirty-talk .knob-value {
     font-size: 11.25px;
-    color: #e0e2e6;
+    font-weight: 700;
+    color: #f7eed8;
+    text-shadow: 0 1px 1px rgba(40,25,5,0.7);
     margin-top: 7.5px;
     min-height: 13.75px;
 }
 .dirty-talk .knob-label {
     font-size: 10px;
     letter-spacing: 0.625px;
-    color: #848a94;
+    color: #efe0bd;
+    text-shadow: 0 1px 1px rgba(40,25,5,0.5);
     margin-top: 2.5px;
 }
 
-/* cabinet row: on/off + IR selector (custom-select, like the mode enum) */
+/* cabinet row: cream pills with gold trim; "on" glows red */
 .dirty-talk .cab-row {
     display: flex;
     gap: 7.5px;
     margin-top: 15px;
 }
 .dirty-talk .cab-enum {
-    background: #22252b;
-    color: #e0e2e6;
-    border: 1px solid #34383f;
+    background: linear-gradient(180deg, #efe6cf, #d6c49c);
+    color: #46351f;
+    border: 1.5px solid #b0904f;
     border-radius: 6.25px;
     height: 28px;
     line-height: 28px;
     text-align: center;
     font-size: 12.5px;
-    font-weight: 600;
-    letter-spacing: 0.625px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     cursor: pointer;
     user-select: none;
     position: relative;
     z-index: 45;
+    box-shadow: inset 0 1px 2px rgba(255,255,255,0.5);
 }
 .dirty-talk .cab-toggle { flex: 0 0 40%; }
 .dirty-talk .cab-select { flex: 1; }
 .dirty-talk .cab-readout { width: 100%; height: 100%; }
 
-/* bypass footswitch */
+/* bypass footswitch: brass ring, red pilot light */
 .dirty-talk .dt-footswitch {
     position: relative;
-    z-index: 30; /* clickable above the drag-handle */
-    margin-top: 20px;
+    z-index: 30;
+    margin-top: 18px;
     text-align: center;
     cursor: pointer;
     user-select: none;
@@ -180,29 +225,29 @@
     height: 8.75px;
     border-radius: 50%;
     margin: 0 auto 7.5px;
-    background: #3a3f47;
+    background: #8f7a52;
     transition: background 120ms ease, box-shadow 120ms ease;
 }
-/* MOD-UI adds `on` when the plugin is enabled; absent = bypassed */
 .dirty-talk .dt-foot-led.on {
-    background: #eb6e46;
-    box-shadow: 0 0 10px rgba(235,110,70,0.85);
+    background: #d24632;
+    box-shadow: 0 0 10px rgba(210,70,50,0.85);
 }
 .dirty-talk .dt-foot-btn {
     width: 45px;
     height: 45px;
     border-radius: 50%;
     margin: 0 auto;
-    background: radial-gradient(circle at 50% 32%, #3c4149, #1c1f24);
-    border: 2.5px solid #4a4f57;
-    box-shadow: inset 0 1.25px 2.5px rgba(255,255,255,0.06), 0 2.5px 3.75px rgba(0,0,0,0.5);
+    background: radial-gradient(circle at 50% 32%, #e9cf8f, #a9843c 62%, #6a4f1e);
+    border: 2.5px solid #6a4f1e;
+    box-shadow: inset 0 1.25px 2.5px rgba(255,245,210,0.5),
+                0 2.5px 3.75px rgba(30,18,4,0.5);
 }
 .dirty-talk .dt-footswitch:active .dt-foot-btn {
-    box-shadow: inset 0 2.5px 5px rgba(0,0,0,0.6);
+    box-shadow: inset 0 2.5px 5px rgba(30,18,4,0.6);
 }
 .dirty-talk .dt-foot-label {
     font-size: 8.75px;
     letter-spacing: 1.25px;
-    color: #848a94;
+    color: #7a5f33;
     margin-top: 6.25px;
 }
