@@ -142,20 +142,38 @@
 .dirty-talk .knob-cell {
     flex: 1;
     text-align: center;
+    position: relative;
+}
+/* Static brass body + shading. MOD rotates the .dt-knob element, so the body
+   lives here (on the non-rotating cell) and only the pointer below rotates --
+   otherwise the directional shading spins with the knob. */
+.dirty-talk .knob-cell:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -26px;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 38% 30%, #e9cf8f, #bd9636 60%, #7c5e22);
+    border: 2px solid #6a4f1e;
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(30,18,4,0.45),
+                inset 0 1px 2px rgba(255,245,210,0.6);
+    z-index: 1;
+    pointer-events: none;
 }
 .dirty-talk .dt-knob {
     width: 52px;
     height: 52px;
     margin: 0 auto;
     border-radius: 50%;
-    background: radial-gradient(circle at 38% 30%, #e9cf8f, #bd9636 60%, #7c5e22);
-    border: 2px solid #6a4f1e;
+    background: transparent;   /* body is drawn by .knob-cell:before */
     box-sizing: border-box;
     position: relative;
     z-index: 30;
     cursor: ns-resize;
-    box-shadow: 0 2px 4px rgba(30,18,4,0.45),
-                inset 0 1px 2px rgba(255,245,210,0.6);
 }
 .dirty-talk .dt-knob:after {
     content: '';
