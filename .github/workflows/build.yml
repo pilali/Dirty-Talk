@@ -43,17 +43,23 @@ jobs:
         run: make macos-universal-10.15 -j$(sysctl -n hw.ncpu)
       - name: Generate LV2 ttl
         run: make gen
-      - name: Verify universal binaries
+      - name: Verify architectures and min macOS version
+        # Guards the two things that make the plugin load on old macOS:
+        #  1. both x86_64 and arm64 slices are present (universal), and
+        #  2. every slice is tagged minos 10.15 -- if the deployment target
+        #     ever creeps up to the runner's OS again, this fails the build.
         run: |
           status=0
           while IFS= read -r f; do
             file "$f" | grep -q 'Mach-O' || continue
             archs=$(lipo -archs "$f" 2>/dev/null)
-            echo "$f: $archs"
-            case " $archs " in
-              *" x86_64 "*) case " $archs " in *" arm64 "*) ;; *) echo "  ERROR: missing arm64"; status=1 ;; esac ;;
-              *) echo "  ERROR: missing x86_64"; status=1 ;;
-            esac
+            echo "$f: [$archs]"
+            case " $archs " in *" x86_64 "*) ;; *) echo "  ERROR: missing x86_64"; status=1 ;; esac
+            case " $archs " in *" arm64 "*) ;; *) echo "  ERROR: missing arm64"; status=1 ;; esac
+            while IFS= read -r minos; do
+              echo "  minos $minos"
+              [ "$minos" = "10.15" ] || { echo "  ERROR: deployment target $minos, expected 10.15"; status=1; }
+            done < <(vtool -show-build "$f" 2>/dev/null | awk '/minos/{print $2}')
           done < <(find bin -type f)
           exit $status
       - uses: actions/upload-artifact@v4
