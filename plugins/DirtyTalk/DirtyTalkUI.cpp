@@ -79,7 +79,7 @@ public:
 
         // six knobs on two rows of three
         const float kx0 = 110.0f, kdx = 130.0f;   // column centres: 110, 240, 370
-        const float ky0 = 175.0f, ky1 = 285.0f;   // row centres
+        const float ky0 = 150.0f, ky1 = 262.0f;   // row centres
 
         fKnobs[0] = { kParamFreq,      "FREQ",      300.0f, 3000.0f, 1000.0f, true,  "%.0f Hz", kx0 + 0*kdx, ky0 };
         fKnobs[1] = { kParamBandwidth, "BANDWIDTH", 0.2f,   4.0f,    1.0f,    false, "%.2f",    kx0 + 1*kdx, ky0 };
@@ -177,7 +177,7 @@ protected:
     // Brass perforated speaker grille behind the two knob rows.
     void drawGrille()
     {
-        const float gx = 42.0f, gy = 146.0f, gw = 396.0f, gh = 202.0f, gr = 10.0f;
+        const float gx = 42.0f, gy = 118.0f, gw = 396.0f, gh = 210.0f, gr = 10.0f;
 
         // brass panel with a diagonal sheen
         beginPath();
@@ -346,11 +346,12 @@ private:
     }
 
     // ---- mode selector geometry ----
-    static constexpr float kModeX = 210.0f;
-    static constexpr float kModeY = 22.0f;
-    static constexpr float kModeW = 58.0f;
-    static constexpr float kModeH = 26.0f;
-    static constexpr float kModeGap = 4.0f;
+    // Full-width selector row placed below the title/subtitle.
+    static constexpr float kModeX = 24.0f;
+    static constexpr float kModeY = 74.0f;
+    static constexpr float kModeW = 103.0f;
+    static constexpr float kModeH = 30.0f;
+    static constexpr float kModeGap = 6.0f;
 
     static constexpr int kNumModes = 4;
 
@@ -396,7 +397,7 @@ private:
     }
 
     // ---- cabinet bar (toggle + IR stepper) ----
-    static constexpr float kCabY    = 360.0f;
+    static constexpr float kCabY    = 346.0f;
     static constexpr float kCabH    = 30.0f;
     static constexpr float kCabTogX = 40.0f;
     static constexpr float kCabTogW = 96.0f;

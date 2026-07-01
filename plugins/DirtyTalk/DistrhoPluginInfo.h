@@ -31,7 +31,7 @@
 
 #define DISTRHO_UI_USE_NANOVG     1
 #define DISTRHO_UI_DEFAULT_WIDTH  480
-#define DISTRHO_UI_DEFAULT_HEIGHT 430
+#define DISTRHO_UI_DEFAULT_HEIGHT 410
 
 // Effect categorisation per format
 #define DISTRHO_PLUGIN_LV2_CATEGORY   "lv2:DistortionPlugin"
