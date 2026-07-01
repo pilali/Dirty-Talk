@@ -267,6 +267,14 @@ protected:
             parameter.ranges.def = 0.0f;
             parameter.ranges.min = 0.0f;
             parameter.ranges.max = 1.0f;
+            {
+                ParameterEnumerationValue* const values = new ParameterEnumerationValue[2];
+                values[0].value = 0.0f; values[0].label = "Cab Off";
+                values[1].value = 1.0f; values[1].label = "Cab On";
+                parameter.enumValues.count = 2;
+                parameter.enumValues.values = values;
+                parameter.enumValues.restrictedMode = true;
+            }
             break;
         case kParamCabIR:
             parameter.name   = "Cab IR";

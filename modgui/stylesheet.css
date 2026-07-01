@@ -56,8 +56,25 @@
     background: #22252b;
     border: 1px solid #34383f;
     border-radius: 6.25px;
-    overflow: hidden;
+    /* Bound the height and scroll instead of listing all 20 IRs, which would
+       run far off the pedal and out of view. */
+    max-height: 220px;
+    overflow-x: hidden;
+    overflow-y: auto;
     z-index: 40;
+}
+/* subtle scrollbar for the enumeration lists */
+.dirty-talk .mod-enumerated-list::-webkit-scrollbar { width: 8px; }
+.dirty-talk .mod-enumerated-list::-webkit-scrollbar-thumb {
+    background: #4a4f57; border-radius: 4px;
+}
+/* The cabinet IR selector sits low on the pedal, so open its list upward to
+   keep it within the panel rather than dropping off the bottom. */
+.dirty-talk .cab-select .mod-enumerated-list {
+    top: auto;
+    bottom: 100%;
+    margin-top: 0;
+    margin-bottom: 3.75px;
 }
 .dirty-talk .mod-enumerated-list [mod-role=enumeration-option] {
     padding: 7.5px 10px;
