@@ -24,8 +24,7 @@ peaks/notches a single band-pass can't reproduce). The distortion stage is
 
 - **Mode** — Vintage Mic / Phone / Megaphone / Small Speaker
 - **Center Freq** — input focus band-pass centre (300–3000 Hz, log)
-- **Bandwidth** — resonant focus filter Q (0.2–10): higher = sharper, taller
-  peak that drives the focused band harder into the distortion (wah/formant)
+- **Bandwidth** — band-pass Q (0.2–4): higher = narrower focused band
 - **Gate** — noise gate threshold (−60–0 dB), click-free smoothed gain
 - **Drive** — saturation amount driven into the waveshaper (−12–+24 dB, smoothed)
 - **Output** — output level applied to the final mix (−24–+24 dB, smoothed)

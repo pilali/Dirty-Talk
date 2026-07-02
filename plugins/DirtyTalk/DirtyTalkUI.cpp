@@ -85,7 +85,7 @@ public:
         // Order: Gate first, Output last; the rest keep their relative order.
         fKnobs[0] = { kParamGate,      "GATE",      -60.0f, 0.0f,    -45.0f,  false, "%.0f dB", kx0 + 0*kdx, ky0 };
         fKnobs[1] = { kParamFreq,      "FREQ",      300.0f, 3000.0f, 1000.0f, true,  "%.0f Hz", kx0 + 1*kdx, ky0 };
-        fKnobs[2] = { kParamBandwidth, "BANDWIDTH", 0.2f,   10.0f,   1.0f,    false, "%.2f",    kx0 + 2*kdx, ky0 };
+        fKnobs[2] = { kParamBandwidth, "BANDWIDTH", 0.2f,   4.0f,    1.0f,    false, "%.2f",    kx0 + 2*kdx, ky0 };
         fKnobs[3] = { kParamDrive,     "DRIVE",     -12.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 0*kdx, ky1 };
         fKnobs[4] = { kParamDryWet,    "DRY/WET",   0.0f,   1.0f,    1.0f,    false, "%.0f %%", kx0 + 1*kdx, ky1 };
         fKnobs[5] = { kParamOutput,    "OUTPUT",    -24.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 2*kdx, ky1 };

@@ -227,7 +227,7 @@ protected:
             parameter.symbol = "bandwidth";
             parameter.ranges.def = 1.0f;
             parameter.ranges.min = 0.2f;
-            parameter.ranges.max = 10.0f;   // higher = sharper, more resonant peak
+            parameter.ranges.max = 4.0f;
             break;
         case kParamGate:
             parameter.name   = "Gate";
@@ -416,18 +416,13 @@ protected:
             fGateGain = fGateGain * gateGainCo + gateTarget * (1.0f - gateGainCo);
             x *= fGateGain;
 
-            // 2. BAND-PASS FILTER (TPT SVF, resonant "focus")
-            // Output the raw band (v1) instead of the Q-normalised k*v1: its
-            // peak gain equals Q (= Bandwidth), so higher Bandwidth lifts the
-            // focused band and drives it harder into the distortion -- an
-            // audible wah/formant sweep. At Bandwidth = 1 the peak is unity,
-            // matching the previous default.
+            // 2. BAND-PASS FILTER (TPT SVF, input focus)
             const float v3 = x - fIc2;
             const float v1 = fA1 * fIc1 + fA2 * v3;
             const float v2 = fIc2 + fA2 * fIc1 + fA3 * v3;
             fIc1 = 2.0f * v1 - fIc1;
             fIc2 = 2.0f * v2 - fIc2;
-            x = v1;
+            x = fK * v1;
 
             // 3. LIGHT COMPRESSION
             const float absF = std::fabs(x);
