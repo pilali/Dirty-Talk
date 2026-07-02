@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <cstdint>
 
 #ifndef M_PI
 # define M_PI 3.14159265358979323846
@@ -149,6 +150,10 @@ protected:
         fill();
         closePath();
 
+        // worn painted-metal texture on the body (covered later by the grille,
+        // pills and knobs, so it only shows on the exposed cream areas)
+        drawWear(w, h);
+
         // title - raised bronze metal letters (vintage "TRANSISTOR" nameplate):
         // upright, widely tracked, with a light top-left highlight and a soft
         // drop shadow so the letters look raised off the cream body.
@@ -182,6 +187,74 @@ protected:
         fillColor(kColGold);
         textAlign(ALIGN_RIGHT | ALIGN_BOTTOM);
         text(w - 18.0f, h - 12.0f, "Pilal", nullptr);
+    }
+
+    // Worn painted-metal texture: soft tonal mottle, fine scratches and small
+    // paint chips (bare-metal specks with a light raised rim), all within the
+    // cream/brass palette. Deterministic PRNG so it is stable frame to frame.
+    void drawWear(float w, float h)
+    {
+        uint32_t seed = 0x9E3779B9u;
+        auto rnd = [&seed]() -> float {
+            seed = seed * 1664525u + 1013904223u;
+            return static_cast<float>((seed >> 8) & 0xFFFFu) / 65535.0f;
+        };
+
+        // tonal mottle
+        for (int i = 0; i < 10; ++i)
+        {
+            const float cx = rnd() * w, cy = rnd() * h, r = 40.0f + rnd() * 130.0f;
+            const bool dark = rnd() < 0.55f;
+            const Color ic = dark ? Color(90, 66, 22, (int)(14 + rnd() * 10))
+                                  : Color(255, 250, 235, (int)(12 + rnd() * 10));
+            const Color oc = dark ? Color(90, 66, 22, 0) : Color(255, 250, 235, 0);
+            beginPath();
+            circle(cx, cy, r);
+            fillPaint(radialGradient(cx, cy, 0.0f, r, ic, oc));
+            fill();
+            closePath();
+        }
+
+        // fine scratches
+        for (int i = 0; i < 90; ++i)
+        {
+            const float x0 = rnd() * w, y0 = rnd() * h;
+            const float ang = (rnd() - 0.5f) * 0.9f + (rnd() < 0.5f ? 0.0f : 1.5708f);
+            const float len = 8.0f + rnd() * 80.0f;
+            const bool light = rnd() < 0.5f;
+            strokeColor(light ? Color(255, 248, 228, (int)(12 + rnd() * 18))
+                              : Color(55, 38, 16, (int)(14 + rnd() * 22)));
+            strokeWidth(rnd() < 0.85f ? 1.0f : 1.5f);
+            beginPath();
+            moveTo(x0, y0);
+            for (int s = 1; s <= 3; ++s)
+            {
+                const float t = len * s / 3.0f;
+                lineTo(x0 + std::cos(ang) * t + (rnd() - 0.5f) * 3.0f,
+                       y0 + std::sin(ang) * t + (rnd() - 0.5f) * 3.0f);
+            }
+            stroke();
+            closePath();
+        }
+
+        // paint chips, clustered toward the edges
+        for (int i = 0; i < 70; ++i)
+        {
+            float cx, cy;
+            if (rnd() < 0.6f) { cx = (rnd() < 0.5f ? rnd() * 40.0f : w - rnd() * 40.0f); cy = rnd() * h; }
+            else              { cx = rnd() * w; cy = (rnd() < 0.5f ? rnd() * 40.0f : h - rnd() * 40.0f); }
+            const float r = 1.0f + rnd() * 2.6f;
+            beginPath();                                   // light raised rim
+            circle(cx - 0.6f, cy - 0.6f, r);
+            fillColor(Color(250, 240, 215, 55));
+            fill();
+            closePath();
+            beginPath();                                   // bare-metal speck
+            circle(cx, cy, r * 0.8f);
+            fillColor(Color(74, 52, 24, (int)(70 + rnd() * 55)));
+            fill();
+            closePath();
+        }
     }
 
     // Brass perforated speaker grille behind the two knob rows.
