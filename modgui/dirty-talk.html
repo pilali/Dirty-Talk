@@ -22,8 +22,16 @@
         </div>
     </div>
 
-    <!-- Knob row -->
+    <!-- Knob rows (two rows of three), set on the brass speaker grille -->
+    <div class="grille">
+    <!-- Order: Gate first, Output last; the rest keep their relative order. -->
     <div class="knob-row">
+
+        <div class="knob-cell">
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="gate" mod-widget-rotation="270"></div>
+            <div class="knob-value" mod-role="input-control-value" mod-port-symbol="gate"></div>
+            <div class="knob-label">GATE</div>
+        </div>
 
         <div class="knob-cell">
             <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="center_freq" mod-widget-rotation="270"></div>
@@ -37,10 +45,14 @@
             <div class="knob-label">BANDWIDTH</div>
         </div>
 
+    </div>
+
+    <div class="knob-row">
+
         <div class="knob-cell">
-            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="gate" mod-widget-rotation="270"></div>
-            <div class="knob-value" mod-role="input-control-value" mod-port-symbol="gate"></div>
-            <div class="knob-label">GATE</div>
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="drive" mod-widget-rotation="270"></div>
+            <div class="knob-value" mod-role="input-control-value" mod-port-symbol="drive"></div>
+            <div class="knob-label">DRIVE</div>
         </div>
 
         <div class="knob-cell">
@@ -49,6 +61,49 @@
             <div class="knob-label">DRY/WET</div>
         </div>
 
+        <div class="knob-cell">
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="output" mod-widget-rotation="270"></div>
+            <div class="knob-value" mod-role="input-control-value" mod-port-symbol="output"></div>
+            <div class="knob-label">OUTPUT</div>
+        </div>
+
+    </div>
+    </div><!-- .grille -->
+
+    <!-- Cabinet: on/off + impulse-response selector (both custom-select). -->
+    <div class="cab-row">
+        <div class="cab-enum cab-toggle" mod-role="input-control-port" mod-widget="custom-select" mod-port-symbol="cab">
+            <div class="cab-readout" mod-role="input-control-value" mod-port-symbol="cab"></div>
+            <div class="mod-enumerated-list">
+                <div mod-role="enumeration-option" mod-port-value="0">Cab Off</div>
+                <div mod-role="enumeration-option" mod-port-value="1">Cab On</div>
+            </div>
+        </div>
+        <div class="cab-enum cab-select" mod-role="input-control-port" mod-widget="custom-select" mod-port-symbol="cab_ir">
+            <div class="cab-readout" mod-role="input-control-value" mod-port-symbol="cab_ir"></div>
+            <div class="mod-enumerated-list">
+                <div mod-role="enumeration-option" mod-port-value="0">Speaker 01</div>
+                <div mod-role="enumeration-option" mod-port-value="1">Speaker 02</div>
+                <div mod-role="enumeration-option" mod-port-value="2">Speaker 03</div>
+                <div mod-role="enumeration-option" mod-port-value="3">Speaker 04</div>
+                <div mod-role="enumeration-option" mod-port-value="4">Speaker 05</div>
+                <div mod-role="enumeration-option" mod-port-value="5">Speaker 06</div>
+                <div mod-role="enumeration-option" mod-port-value="6">Speaker 07</div>
+                <div mod-role="enumeration-option" mod-port-value="7">Speaker 08</div>
+                <div mod-role="enumeration-option" mod-port-value="8">Speaker 09</div>
+                <div mod-role="enumeration-option" mod-port-value="9">Speaker 10</div>
+                <div mod-role="enumeration-option" mod-port-value="10">Speaker 11</div>
+                <div mod-role="enumeration-option" mod-port-value="11">Speaker 12</div>
+                <div mod-role="enumeration-option" mod-port-value="12">Speaker 13</div>
+                <div mod-role="enumeration-option" mod-port-value="13">Speaker 14</div>
+                <div mod-role="enumeration-option" mod-port-value="14">Speaker 15</div>
+                <div mod-role="enumeration-option" mod-port-value="15">Speaker 16</div>
+                <div mod-role="enumeration-option" mod-port-value="16">Speaker 17</div>
+                <div mod-role="enumeration-option" mod-port-value="17">Speaker 18</div>
+                <div mod-role="enumeration-option" mod-port-value="18">Speaker 19</div>
+                <div mod-role="enumeration-option" mod-port-value="19">Speaker 20</div>
+            </div>
+        </div>
     </div>
 
     <!-- Bypass footswitch. MOD-UI toggles the `on` class on the bypass-light

@@ -9,6 +9,7 @@
 
 #include <cmath>
 #include <cstdio>
+#include <cstdint>
 
 #ifndef M_PI
 # define M_PI 3.14159265358979323846
@@ -19,14 +20,23 @@ START_NAMESPACE_DISTRHO
 using DGL_NAMESPACE::Color;
 
 // --------------------------------------------------------------------------------------------------------------
-// Palette
+// Palette - 1960s transistor-radio look (cream body, brass grille, red needle)
 
-static const Color kColBg     (24, 26, 30);
-static const Color kColPanel  (34, 37, 43);
-static const Color kColTrack  (52, 56, 64);
-static const Color kColAccent (235, 110, 70);   // warm orange
-static const Color kColText   (224, 226, 230);
-static const Color kColTextDim(132, 138, 148);
+static const Color kColBg      (215, 199, 162);  // cream body
+static const Color kColBgTop   (232, 220, 190);  // lighter top of body
+static const Color kColPanel   (239, 230, 207);  // cream pill (top)
+static const Color kColPanelLo (214, 196, 156);  // cream pill (bottom)
+static const Color kColTrack   (110,  83,  32);  // dark brass knob track
+static const Color kColAccent  (210,  70,  50);  // red tuning needle
+static const Color kColText    ( 70,  53,  31);  // dark brown
+static const Color kColTextDim (138, 109,  62);  // medium brown
+static const Color kColGold    (176, 144,  79);  // gold trim / borders
+static const Color kColGrille  (169, 132,  60);  // brass grille base
+static const Color kColGrilleDk( 90,  66,  22);  // grille perforation / frame
+static const Color kColKnobHi  (233, 207, 143);  // brass highlight
+static const Color kColKnobLo  (124,  94,  34);  // brass shadow
+static const Color kColKnobPtr ( 58,  37,  19);  // knob pointer
+static const Color kColGrilleTx(247, 238, 216);  // cream text over the grille
 
 // Knob geometry (270 degree sweep, pointing down at center)
 static const float kArcStart = 2.356194f;   //  135 deg
@@ -49,32 +59,50 @@ public:
     DirtyTalkUI()
         : UI(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT),
           fMode(0),
+          fCab(0),
+          fCabIR(0),
           fDragKnob(-1),
           fDragStartY(0.0),
           fDragStartVal(0.0f)
     {
        #ifdef DGL_NO_SHARED_RESOURCES
+        // Custom font loaded from disk under our own name.
         createFontFromFile("sans", "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf");
+        fFontName = "sans";
        #else
+        // loadSharedResources() registers DPF's built-in DejaVu Sans under the
+        // internal name NANOVG_DEJAVU_SANS_TTF -- NOT "sans". Selecting "sans"
+        // here would find no font and NanoVG would silently draw no text at all
+        // (the bug this replaces). Reference the actual registered name instead.
         loadSharedResources();
+        fFontName = NANOVG_DEJAVU_SANS_TTF;
        #endif
 
-        // four knobs across the lower part of the window
-        const float ky = 215.0f;
-        const float kx0 = 75.0f;
-        const float kdx = 110.0f;
+        // six knobs on two rows of three
+        const float kx0 = 110.0f, kdx = 130.0f;   // column centres: 110, 240, 370
+        const float ky0 = 150.0f, ky1 = 262.0f;   // row centres
 
-        fKnobs[0] = { kParamFreq,      "FREQ",      300.0f, 3000.0f, 1000.0f, true,  "%.0f Hz", kx0 + 0*kdx, ky };
-        fKnobs[1] = { kParamBandwidth, "BANDWIDTH", 0.2f,   4.0f,    1.0f,    false, "%.2f",    kx0 + 1*kdx, ky };
-        fKnobs[2] = { kParamGate,      "GATE",      -60.0f, 0.0f,    -45.0f,  false, "%.0f dB", kx0 + 2*kdx, ky };
-        fKnobs[3] = { kParamDryWet,    "DRY/WET",   0.0f,   1.0f,    1.0f,    false, "%.0f %%", kx0 + 3*kdx, ky };
+        // Order: Gate first, Output last; the rest keep their relative order.
+        fKnobs[0] = { kParamGate,      "GATE",      -60.0f, 0.0f,    -45.0f,  false, "%.0f dB", kx0 + 0*kdx, ky0 };
+        fKnobs[1] = { kParamFreq,      "FREQ",      300.0f, 3000.0f, 1000.0f, true,  "%.0f Hz", kx0 + 1*kdx, ky0 };
+        fKnobs[2] = { kParamBandwidth, "BANDWIDTH", 0.2f,   4.0f,    1.0f,    false, "%.2f",    kx0 + 2*kdx, ky0 };
+        fKnobs[3] = { kParamDrive,     "DRIVE",     -12.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 0*kdx, ky1 };
+        fKnobs[4] = { kParamDryWet,    "DRY/WET",   0.0f,   1.0f,    1.0f,    false, "%.0f %%", kx0 + 1*kdx, ky1 };
+        fKnobs[5] = { kParamOutput,    "OUTPUT",    -24.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 2*kdx, ky1 };
 
-        fKnobVal[0] = 1000.0f;
-        fKnobVal[1] = 1.0f;
-        fKnobVal[2] = -45.0f;
-        fKnobVal[3] = 1.0f;
+        fKnobVal[0] = -45.0f;   // GATE
+        fKnobVal[1] = 1000.0f;  // FREQ
+        fKnobVal[2] = 1.0f;     // BANDWIDTH
+        fKnobVal[3] = 0.0f;     // DRIVE
+        fKnobVal[4] = 1.0f;     // DRY/WET
+        fKnobVal[5] = 0.0f;     // OUTPUT
 
-        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true);
+        // keepAspectRatio + automaticallyScale: the layout uses fixed pixel
+        // coordinates, so let DPF scale the whole UI (drawing and input) to the
+        // host's view/scale factor. Without automatic scaling a HiDPI AU view
+        // (e.g. 2x Retina) is reported at physical pixel size, leaving the
+        // fixed-coordinate content clustered in the top-left corner.
+        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true, true);
     }
 
 protected:
@@ -89,7 +117,19 @@ protected:
             repaint();
             return;
         }
-        for (int k = 0; k < 4; ++k)
+        if (index == kParamCab)
+        {
+            fCab = static_cast<int>(value + 0.5f);
+            repaint();
+            return;
+        }
+        if (index == kParamCabIR)
+        {
+            fCabIR = static_cast<int>(value + 0.5f);
+            repaint();
+            return;
+        }
+        for (int k = 0; k < kNumKnobs; ++k)
         {
             if (fKnobs[k].index == index)
             {
@@ -108,28 +148,152 @@ protected:
         const float w = static_cast<float>(getWidth());
         const float h = static_cast<float>(getHeight());
 
-        // background
+        // cream body with a soft top-lit gradient
         beginPath();
         rect(0.0f, 0.0f, w, h);
-        fillColor(kColBg);
+        fillPaint(linearGradient(0.0f, 0.0f, 0.0f, h, kColBgTop, kColBg));
         fill();
         closePath();
 
-        // title
-        fontFace("sans");
-        fontSize(26.0f);
-        fillColor(kColText);
-        textAlign(ALIGN_LEFT | ALIGN_TOP);
-        text(24.0f, 20.0f, "DIRTY TALK", nullptr);
+        // worn painted-metal texture on the body (covered later by the grille,
+        // pills and knobs, so it only shows on the exposed cream areas)
+        drawWear(w, h);
 
+        // title - raised bronze metal letters (vintage "TRANSISTOR" nameplate):
+        // upright, widely tracked, with a light top-left highlight and a soft
+        // drop shadow so the letters look raised off the cream body.
+        fontFace(fFontName);
+        textAlign(ALIGN_LEFT | ALIGN_TOP);
+        fontSize(24.0f);
+        textLetterSpacing(5.0f);
+        fillColor(Color(35, 22, 8));              // cast shadow (down-right)
+        text(26.0f, 23.0f, "DIRTY TALK", nullptr);
+        fillColor(kColBgTop);                     // top-left highlight
+        text(23.0f, 19.0f, "DIRTY TALK", nullptr);
+        fillColor(Color(95, 65, 39));             // dark bronze face
+        text(24.0f, 20.0f, "DIRTY TALK", nullptr);
+        textLetterSpacing(0.0f);
+
+        // subtitle
         fontSize(11.0f);
         fillColor(kColTextDim);
-        text(26.0f, 50.0f, "PILAL  -  LO-FI VOCAL DISTORTION", nullptr);
+        text(26.0f, 52.0f, "PILAL  -  LO-FI VOCAL DISTORTION", nullptr);
 
         drawModeSelector();
 
-        for (int k = 0; k < 4; ++k)
+        drawGrille();
+        for (int k = 0; k < kNumKnobs; ++k)
             drawKnob(fKnobs[k], fKnobVal[k]);
+
+        drawCabBar();
+
+        // gold maker script, bottom-right
+        fontSize(15.0f);
+        fillColor(kColGold);
+        textAlign(ALIGN_RIGHT | ALIGN_BOTTOM);
+        text(w - 18.0f, h - 12.0f, "Pilal", nullptr);
+    }
+
+    // Worn painted-metal texture: soft tonal mottle, fine scratches and small
+    // paint chips (bare-metal specks with a light raised rim), all within the
+    // cream/brass palette. Deterministic PRNG so it is stable frame to frame.
+    void drawWear(float w, float h)
+    {
+        uint32_t seed = 0x9E3779B9u;
+        auto rnd = [&seed]() -> float {
+            seed = seed * 1664525u + 1013904223u;
+            return static_cast<float>((seed >> 8) & 0xFFFFu) / 65535.0f;
+        };
+
+        // tonal mottle
+        for (int i = 0; i < 10; ++i)
+        {
+            const float cx = rnd() * w, cy = rnd() * h, r = 40.0f + rnd() * 130.0f;
+            const bool dark = rnd() < 0.55f;
+            const Color ic = dark ? Color(90, 66, 22, (int)(14 + rnd() * 10))
+                                  : Color(255, 250, 235, (int)(12 + rnd() * 10));
+            const Color oc = dark ? Color(90, 66, 22, 0) : Color(255, 250, 235, 0);
+            beginPath();
+            circle(cx, cy, r);
+            fillPaint(radialGradient(cx, cy, 0.0f, r, ic, oc));
+            fill();
+            closePath();
+        }
+
+        // fine scratches
+        for (int i = 0; i < 90; ++i)
+        {
+            const float x0 = rnd() * w, y0 = rnd() * h;
+            const float ang = (rnd() - 0.5f) * 0.9f + (rnd() < 0.5f ? 0.0f : 1.5708f);
+            const float len = 8.0f + rnd() * 80.0f;
+            const bool light = rnd() < 0.5f;
+            strokeColor(light ? Color(255, 248, 228, (int)(12 + rnd() * 18))
+                              : Color(55, 38, 16, (int)(14 + rnd() * 22)));
+            strokeWidth(rnd() < 0.85f ? 1.0f : 1.5f);
+            beginPath();
+            moveTo(x0, y0);
+            for (int s = 1; s <= 3; ++s)
+            {
+                const float t = len * s / 3.0f;
+                lineTo(x0 + std::cos(ang) * t + (rnd() - 0.5f) * 3.0f,
+                       y0 + std::sin(ang) * t + (rnd() - 0.5f) * 3.0f);
+            }
+            stroke();
+            closePath();
+        }
+
+        // paint chips, clustered toward the edges
+        for (int i = 0; i < 70; ++i)
+        {
+            float cx, cy;
+            if (rnd() < 0.6f) { cx = (rnd() < 0.5f ? rnd() * 40.0f : w - rnd() * 40.0f); cy = rnd() * h; }
+            else              { cx = rnd() * w; cy = (rnd() < 0.5f ? rnd() * 40.0f : h - rnd() * 40.0f); }
+            const float r = 1.0f + rnd() * 2.6f;
+            beginPath();                                   // light raised rim
+            circle(cx - 0.6f, cy - 0.6f, r);
+            fillColor(Color(250, 240, 215, 55));
+            fill();
+            closePath();
+            beginPath();                                   // bare-metal speck
+            circle(cx, cy, r * 0.8f);
+            fillColor(Color(74, 52, 24, (int)(70 + rnd() * 55)));
+            fill();
+            closePath();
+        }
+    }
+
+    // Brass perforated speaker grille behind the two knob rows.
+    void drawGrille()
+    {
+        const float gx = 42.0f, gy = 118.0f, gw = 396.0f, gh = 210.0f, gr = 10.0f;
+
+        // brass panel with a diagonal sheen
+        beginPath();
+        roundedRect(gx, gy, gw, gh, gr);
+        fillPaint(linearGradient(gx, gy, gx + gw * 0.4f, gy + gh, kColKnobHi, kColGrille));
+        fill();
+        closePath();
+
+        // perforations: a dot grid clipped to the panel
+        scissor(gx + 3.0f, gy + 3.0f, gw - 6.0f, gh - 6.0f);
+        fillColor(kColGrilleDk);
+        for (float yy = gy + 10.0f; yy < gy + gh - 6.0f; yy += 13.0f)
+            for (float xx = gx + 10.0f; xx < gx + gw - 6.0f; xx += 13.0f)
+            {
+                beginPath();
+                circle(xx, yy, 1.4f);
+                fill();
+                closePath();
+            }
+        resetScissor();
+
+        // recessed brass frame
+        beginPath();
+        roundedRect(gx, gy, gw, gh, gr);
+        strokeColor(kColGrilleDk);
+        strokeWidth(2.5f);
+        stroke();
+        closePath();
     }
 
    /* ----------------------------------------------------------------------------------------------------------
@@ -150,8 +314,12 @@ protected:
                 return true;
             }
 
+            // cabinet bar?
+            if (handleCabPress(ev.pos.getX(), ev.pos.getY()))
+                return true;
+
             // knob?
-            for (int k = 0; k < 4; ++k)
+            for (int k = 0; k < kNumKnobs; ++k)
             {
                 if (insideKnob(fKnobs[k], ev.pos.getX(), ev.pos.getY()))
                 {
@@ -190,7 +358,15 @@ protected:
 
     bool onScroll(const ScrollEvent& ev) override
     {
-        for (int k = 0; k < 4; ++k)
+        // scroll over the cabinet bar cycles the IR
+        if (ev.pos.getY() >= kCabY && ev.pos.getY() <= kCabY + kCabH &&
+            ev.pos.getX() >= kIRPrevX && ev.pos.getX() <= kIRNextX + kIRBtnW)
+        {
+            stepIR(ev.delta.getY() > 0.0 ? +1 : -1);
+            return true;
+        }
+
+        for (int k = 0; k < kNumKnobs; ++k)
         {
             if (insideKnob(fKnobs[k], ev.pos.getX(), ev.pos.getY()))
             {
@@ -206,9 +382,17 @@ protected:
     }
 
 private:
+    static constexpr int kNumKnobs = 6;
+    // Keep in sync with dirtytalk_irs::kNumIRs in the DSP (the big IR header is
+    // not pulled into the UI translation unit just for this count).
+    static constexpr int kNumIRs = 20;
+
+    const char* fFontName;
     int   fMode;
-    KnobDesc fKnobs[4];
-    float fKnobVal[4];
+    int   fCab;      // cabinet on/off
+    int   fCabIR;    // selected IR index
+    KnobDesc fKnobs[kNumKnobs];
+    float fKnobVal[kNumKnobs];
 
     int    fDragKnob;
     double fDragStartY;
@@ -250,11 +434,12 @@ private:
     }
 
     // ---- mode selector geometry ----
-    static constexpr float kModeX = 210.0f;
-    static constexpr float kModeY = 22.0f;
-    static constexpr float kModeW = 58.0f;
-    static constexpr float kModeH = 26.0f;
-    static constexpr float kModeGap = 4.0f;
+    // Full-width selector row placed below the title/subtitle.
+    static constexpr float kModeX = 24.0f;
+    static constexpr float kModeY = 74.0f;
+    static constexpr float kModeW = 103.0f;
+    static constexpr float kModeH = 30.0f;
+    static constexpr float kModeGap = 6.0f;
 
     static constexpr int kNumModes = 4;
 
@@ -284,13 +469,123 @@ private:
 
             beginPath();
             roundedRect(x, kModeY, kModeW, kModeH, 5.0f);
-            fillColor(active ? kColAccent : kColPanel);
+            if (active)
+                fillColor(kColAccent);
+            else
+                fillPaint(linearGradient(x, kModeY, x, kModeY + kModeH, kColPanel, kColPanelLo));
             fill();
+            strokeColor(kColGold);
+            strokeWidth(1.5f);
+            stroke();
             closePath();
 
-            fillColor(active ? kColBg : kColTextDim);
+            fillColor(active ? kColGrilleTx : kColText);
             text(x + kModeW * 0.5f, kModeY + kModeH * 0.5f, labels[i], nullptr);
         }
+    }
+
+    // ---- cabinet bar (toggle + IR stepper) ----
+    static constexpr float kCabY    = 346.0f;
+    static constexpr float kCabH    = 30.0f;
+    static constexpr float kCabTogX = 40.0f;
+    static constexpr float kCabTogW = 96.0f;
+    static constexpr float kIRBtnW  = 30.0f;
+    static constexpr float kIRPrevX = 156.0f;
+    static constexpr float kIRNextX = 404.0f;
+
+    static bool inRect(float x, float y, float w, float h, double mx, double my)
+    {
+        return mx >= x && mx <= x + w && my >= y && my <= y + h;
+    }
+
+    // A cream, gold-trimmed pill (the shared vintage control background).
+    void creamPill(float x, float y, float w, float h)
+    {
+        beginPath();
+        roundedRect(x, y, w, h, 5.0f);
+        fillPaint(linearGradient(x, y, x, y + h, kColPanel, kColPanelLo));
+        fill();
+        strokeColor(kColGold);
+        strokeWidth(1.5f);
+        stroke();
+        closePath();
+    }
+
+    void drawStepBtn(float x, const char* glyph)
+    {
+        creamPill(x, kCabY, kIRBtnW, kCabH);
+        fontSize(16.0f);
+        fillColor(kColText);
+        textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        text(x + kIRBtnW * 0.5f, kCabY + kCabH * 0.5f, glyph, nullptr);
+    }
+
+    void drawCabBar()
+    {
+        const float cy = kCabY + kCabH * 0.5f;
+
+        // on/off toggle (red when on, like the pilot light)
+        if (fCab)
+        {
+            beginPath();
+            roundedRect(kCabTogX, kCabY, kCabTogW, kCabH, 5.0f);
+            fillColor(kColAccent);
+            fill();
+            strokeColor(kColGold);
+            strokeWidth(1.5f);
+            stroke();
+            closePath();
+        }
+        else
+        {
+            creamPill(kCabTogX, kCabY, kCabTogW, kCabH);
+        }
+        fontSize(12.0f);
+        textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        fillColor(fCab ? kColGrilleTx : kColTextDim);
+        text(kCabTogX + kCabTogW * 0.5f, cy, fCab ? "CAB ON" : "CAB OFF", nullptr);
+
+        // IR stepper: < [ IR NN ] >
+        drawStepBtn(kIRPrevX, "<");
+        drawStepBtn(kIRNextX, ">");
+
+        const float dispX = kIRPrevX + kIRBtnW + 6.0f;
+        const float dispW = kIRNextX - 6.0f - dispX;
+        creamPill(dispX, kCabY, dispW, kCabH);
+
+        char buf[32];
+        std::snprintf(buf, sizeof(buf), "IR %02d", fCabIR + 1);
+        fontSize(13.0f);
+        fillColor(kColText);
+        textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        text(dispX + dispW * 0.5f, cy, buf, nullptr);
+    }
+
+    void setCab(int on)
+    {
+        fCab = on ? 1 : 0;
+        editParameter(kParamCab, true);
+        setParameterValue(kParamCab, static_cast<float>(fCab));
+        editParameter(kParamCab, false);
+        repaint();
+    }
+
+    void stepIR(int dir)
+    {
+        fCabIR = (fCabIR + dir + kNumIRs) % kNumIRs;
+        editParameter(kParamCabIR, true);
+        setParameterValue(kParamCabIR, static_cast<float>(fCabIR));
+        editParameter(kParamCabIR, false);
+        repaint();
+    }
+
+    // Returns true if the press was consumed by the cabinet bar.
+    bool handleCabPress(double mx, double my)
+    {
+        if (inRect(kCabTogX, kCabY, kCabTogW, kCabH, mx, my)) { setCab(!fCab); return true; }
+        if (inRect(kIRPrevX, kCabY, kIRBtnW, kCabH, mx, my))  { stepIR(-1);   return true; }
+        if (inRect(kIRNextX, kCabY, kIRBtnW, kCabH, mx, my))  { stepIR(+1);   return true; }
+        return false;
     }
 
     // ---- knob ----
@@ -316,7 +611,7 @@ private:
         stroke();
         closePath();
 
-        // value arc
+        // value arc (red needle colour)
         beginPath();
         arc(kd.cx, kd.cy, kKnobR, kArcStart, ang, NanoVG::CW);
         strokeColor(kColAccent);
@@ -324,11 +619,17 @@ private:
         stroke();
         closePath();
 
-        // knob body
+        // brass knob body (radial highlight top-left)
         beginPath();
         circle(kd.cx, kd.cy, kKnobR - 6.0f);
-        fillColor(kColPanel);
+        fillPaint(radialGradient(kd.cx - 6.0f, kd.cy - 8.0f, 2.0f, kKnobR - 2.0f, kColKnobHi, kColKnobLo));
         fill();
+        closePath();
+        beginPath();
+        circle(kd.cx, kd.cy, kKnobR - 6.0f);
+        strokeColor(kColGrilleDk);
+        strokeWidth(1.5f);
+        stroke();
         closePath();
 
         // pointer
@@ -337,26 +638,30 @@ private:
         beginPath();
         moveTo(kd.cx, kd.cy);
         lineTo(px, py);
-        strokeColor(kColText);
-        strokeWidth(2.0f);
+        strokeColor(kColKnobPtr);
+        strokeWidth(2.5f);
         stroke();
         closePath();
 
-        // value readout
+        // value readout (cream over the grille, with a soft dark shadow)
         char buf[32];
         float shown = value;
         if (kd.index == kParamDryWet)
             shown = value * 100.0f;
         std::snprintf(buf, sizeof(buf), kd.fmt, shown);
 
-        fontSize(12.0f);
-        fillColor(kColText);
         textAlign(ALIGN_CENTER | ALIGN_MIDDLE);
+        fontSize(12.0f);
+        fillColor(kColGrilleDk);
+        text(kd.cx + 0.7f, kd.cy + kKnobR + 16.7f, buf, nullptr);
+        fillColor(kColGrilleTx);
         text(kd.cx, kd.cy + kKnobR + 16.0f, buf, nullptr);
 
         // label
         fontSize(10.0f);
-        fillColor(kColTextDim);
+        fillColor(kColGrilleDk);
+        text(kd.cx + 0.6f, kd.cy + kKnobR + 32.6f, kd.label, nullptr);
+        fillColor(kColGrilleTx);
         text(kd.cx, kd.cy + kKnobR + 32.0f, kd.label, nullptr);
     }
 
