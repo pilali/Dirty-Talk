@@ -24,7 +24,14 @@
 
     <!-- Knob rows (two rows of three), set on the brass speaker grille -->
     <div class="grille">
+    <!-- Order: Gate first, Output last; the rest keep their relative order. -->
     <div class="knob-row">
+
+        <div class="knob-cell">
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="gate" mod-widget-rotation="270"></div>
+            <div class="knob-value" mod-role="input-control-value" mod-port-symbol="gate"></div>
+            <div class="knob-label">GATE</div>
+        </div>
 
         <div class="knob-cell">
             <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="center_freq" mod-widget-rotation="270"></div>
@@ -38,12 +45,6 @@
             <div class="knob-label">BANDWIDTH</div>
         </div>
 
-        <div class="knob-cell">
-            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="gate" mod-widget-rotation="270"></div>
-            <div class="knob-value" mod-role="input-control-value" mod-port-symbol="gate"></div>
-            <div class="knob-label">GATE</div>
-        </div>
-
     </div>
 
     <div class="knob-row">
@@ -55,15 +56,15 @@
         </div>
 
         <div class="knob-cell">
-            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="output" mod-widget-rotation="270"></div>
-            <div class="knob-value" mod-role="input-control-value" mod-port-symbol="output"></div>
-            <div class="knob-label">OUTPUT</div>
-        </div>
-
-        <div class="knob-cell">
             <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="dry_wet" mod-widget-rotation="270"></div>
             <div class="knob-value" mod-role="input-control-value" mod-port-symbol="dry_wet"></div>
             <div class="knob-label">DRY/WET</div>
+        </div>
+
+        <div class="knob-cell">
+            <div class="dt-knob" mod-role="input-control-port" mod-port-symbol="output" mod-widget-rotation="270"></div>
+            <div class="knob-value" mod-role="input-control-value" mod-port-symbol="output"></div>
+            <div class="knob-label">OUTPUT</div>
         </div>
 
     </div>

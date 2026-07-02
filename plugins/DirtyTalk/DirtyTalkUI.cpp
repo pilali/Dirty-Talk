@@ -81,19 +81,20 @@ public:
         const float kx0 = 110.0f, kdx = 130.0f;   // column centres: 110, 240, 370
         const float ky0 = 150.0f, ky1 = 262.0f;   // row centres
 
-        fKnobs[0] = { kParamFreq,      "FREQ",      300.0f, 3000.0f, 1000.0f, true,  "%.0f Hz", kx0 + 0*kdx, ky0 };
-        fKnobs[1] = { kParamBandwidth, "BANDWIDTH", 0.2f,   4.0f,    1.0f,    false, "%.2f",    kx0 + 1*kdx, ky0 };
-        fKnobs[2] = { kParamGate,      "GATE",      -60.0f, 0.0f,    -45.0f,  false, "%.0f dB", kx0 + 2*kdx, ky0 };
+        // Order: Gate first, Output last; the rest keep their relative order.
+        fKnobs[0] = { kParamGate,      "GATE",      -60.0f, 0.0f,    -45.0f,  false, "%.0f dB", kx0 + 0*kdx, ky0 };
+        fKnobs[1] = { kParamFreq,      "FREQ",      300.0f, 3000.0f, 1000.0f, true,  "%.0f Hz", kx0 + 1*kdx, ky0 };
+        fKnobs[2] = { kParamBandwidth, "BANDWIDTH", 0.2f,   4.0f,    1.0f,    false, "%.2f",    kx0 + 2*kdx, ky0 };
         fKnobs[3] = { kParamDrive,     "DRIVE",     -12.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 0*kdx, ky1 };
-        fKnobs[4] = { kParamOutput,    "OUTPUT",    -24.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 1*kdx, ky1 };
-        fKnobs[5] = { kParamDryWet,    "DRY/WET",   0.0f,   1.0f,    1.0f,    false, "%.0f %%", kx0 + 2*kdx, ky1 };
+        fKnobs[4] = { kParamDryWet,    "DRY/WET",   0.0f,   1.0f,    1.0f,    false, "%.0f %%", kx0 + 1*kdx, ky1 };
+        fKnobs[5] = { kParamOutput,    "OUTPUT",    -24.0f, 24.0f,   0.0f,    false, "%.1f dB", kx0 + 2*kdx, ky1 };
 
-        fKnobVal[0] = 1000.0f;
-        fKnobVal[1] = 1.0f;
-        fKnobVal[2] = -45.0f;
-        fKnobVal[3] = 0.0f;
-        fKnobVal[4] = 0.0f;
-        fKnobVal[5] = 1.0f;
+        fKnobVal[0] = -45.0f;   // GATE
+        fKnobVal[1] = 1000.0f;  // FREQ
+        fKnobVal[2] = 1.0f;     // BANDWIDTH
+        fKnobVal[3] = 0.0f;     // DRIVE
+        fKnobVal[4] = 1.0f;     // DRY/WET
+        fKnobVal[5] = 0.0f;     // OUTPUT
 
         setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true);
     }
