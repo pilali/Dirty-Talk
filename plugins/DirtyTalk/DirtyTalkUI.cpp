@@ -97,7 +97,12 @@ public:
         fKnobVal[4] = 1.0f;     // DRY/WET
         fKnobVal[5] = 0.0f;     // OUTPUT
 
-        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true);
+        // keepAspectRatio + automaticallyScale: the layout uses fixed pixel
+        // coordinates, so let DPF scale the whole UI (drawing and input) to the
+        // host's view/scale factor. Without automatic scaling a HiDPI AU view
+        // (e.g. 2x Retina) is reported at physical pixel size, leaving the
+        // fixed-coordinate content clustered in the top-left corner.
+        setGeometryConstraints(DISTRHO_UI_DEFAULT_WIDTH, DISTRHO_UI_DEFAULT_HEIGHT, true, true);
     }
 
 protected:
